@@ -1,0 +1,352 @@
+.calendar-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.calendar-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-kicker {
+  margin: 0 0 0.25rem;
+  color: #6366f1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.calendar-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 2rem;
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.calendar-nav button {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.7rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.date-jump {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem;
+  border: 1px solid #dbe4df;
+  border-radius: 0.65rem;
+  background: #f5f8f6;
+}
+
+.date-jump label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.date-jump select,
+.date-jump input,
+.date-jump button {
+  min-height: 2.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+}
+
+.date-jump input {
+  width: 6.5rem;
+}
+
+.date-jump button {
+  border-color: #244d3d;
+  background: #244d3d;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.date-jump-mode {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border-radius: 0.55rem;
+  background: #e7ece9;
+}
+
+.date-jump-mode button {
+  border-color: transparent;
+  background: transparent;
+  color: #40524a;
+}
+
+.date-jump-mode button[aria-pressed='true'] {
+  background: #244d3d;
+  color: #fff;
+}
+
+.date-year-hebrew {
+  color: #244d3d;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.calendar-status {
+  margin: 1rem 0 1.25rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.selected-date-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px solid #ddd6fe;
+  min-width: 220px;
+}
+
+.summary-label {
+  color: #6b7280;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selected-date-summary strong {
+  color: #0f172a;
+  font-size: 1.2rem;
+}
+
+.hebrew-date-inline {
+  color: #4f46e5;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.holiday-label-inline {
+  display: inline-flex;
+  width: fit-content;
+  background: rgba(251, 146, 60, 0.15);
+  color: #9a4d00;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.day-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0;
+  color: #475569;
+  font-weight: 700;
+  min-height: 60px;
+}
+
+.day-name small {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 118px;
+  padding: 0.4rem 0.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar-day:hover {
+  border-color: #a5b4fc;
+  transform: translateY(-1px);
+}
+
+.calendar-day.muted {
+  opacity: 0.45;
+}
+
+.calendar-day.today {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.calendar-day.selected {
+  background: linear-gradient(135deg, #4f46e5, #600eee);
+  color: white;
+  border-color: transparent;
+}
+
+.calendar-day.holiday {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border-color: #fdba74;
+}
+
+.calendar-day.shabbat {
+  background: #e8f4ed;
+  border-color: #a8ceb6;
+}
+
+.calendar-day.chol-hamoed {
+  background: #fff2d8;
+  border-color: #e6b85c;
+}
+
+.calendar-day.fast {
+  background: #fce8e8;
+  border-color: #e8a5a5;
+}
+
+.calendar-day.rental {
+  background: #f7f1fb;
+  border-color: #e5d5f0;
+}
+
+.calendar-day.selected,
+.calendar-day.selected.holiday,
+.calendar-day.selected.shabbat,
+.calendar-day.selected.chol-hamoed,
+.calendar-day.selected.fast {
+  background: #244d3d;
+  color: #fff;
+  border-color: #244d3d;
+}
+
+.gregorian-day {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.hebrew-day {
+  font-size: 1rem;
+  opacity: 0.9;
+  font-weight: 700;
+}
+
+.holiday-tag {
+  max-width: 100%;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #9a4d00;
+  background: rgba(251, 146, 60, 0.15);
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.3rem;
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+
+.shabbat-details,
+.selected-shabbat-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.selected-shabbat-details {
+  align-items: flex-start;
+  font-size: 0.8rem;
+}
+
+.location-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.location-select select {
+  min-height: 2.25rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+}
+
+@media (max-width: 800px) {
+  .calendar-page {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .calendar-nav {
+    justify-content: flex-start;
+  }
+
+  .selected-date-summary {
+    width: 100%;
+  }
+
+  .location-select {
+    flex-wrap: wrap;
+  }
+}
+
