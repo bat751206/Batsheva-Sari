@@ -1,12 +1,21 @@
 const Rents = require("../models/rents")
+const { createNewRenter } = require("./rentersController")
+const {addrentalToRenter} = require("./rentersController")
 
 const createNewRent = async (req, res) => {
-    const {date,numOfBeds,numOfBabyBeds,numOfNights,renter,chekPikadon,tivuch,sumPayment}= req.body
-    if (!date || !numOfBeds||!numOfNights||!sumPayment ) {
-        return res.send("date and numOfBeds and numOfNights andsumPayment is required")
+    const {date,numOfBeds,numOfBabyBeds,numOfNights,chekPikadon,tivuch,sumPayment,description}= req.body
+    const { name, phone, email, city, advertisement}= req.body
+    if (!date || !numOfBeds||!numOfNights||!sumPayment||!name||!phone ) {
+        return res.send("date and numOfBeds and numOfNights and sumPayment is required")
     }
-    const rent = await Rents.create({date,numOfBeds,numOfBabyBeds,numOfNights,renter,chekPikadon,tivuch,sumPayment})
+
+
+    const renter=await createNewRenter( name, phone, email, city, advertisement)
+
+    const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, chekPikadon, tivuch, sumPayment, description })
+    await addrentalToRenter(renter._id,rent)
     res.json(rent)
+
 }
 
 const getAllRents = async (req,res)=>{

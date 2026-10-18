@@ -25,6 +25,9 @@ const rentersSchema = new mongoose.Schema({
     rentsList:{
         type:[rentSchema],
         default:[]
+    },
+    advertisement:{
+        type:String
     }
 
 }, {

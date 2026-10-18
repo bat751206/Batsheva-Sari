@@ -10,8 +10,9 @@ const rentSchema = new mongoose.Schema({
         required:true
     },
     numOfBabyBeds:{
-        type:String,
-        default:0
+        type:Number,
+        default:0,
+        max:2
     },
     numOfNights:{
         type:Number,
@@ -20,6 +21,10 @@ const rentSchema = new mongoose.Schema({
     sumPayment:{
         type:Number,
         required:true
+    },
+    description: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

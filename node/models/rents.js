@@ -10,7 +10,7 @@ const rentsSchema = new mongoose.Schema({
         required:true
     },
     numOfBabyBeds:{
-        type:String,
+        type:Number,
         default:0
     },
     numOfNights:{
@@ -21,7 +21,7 @@ const rentsSchema = new mongoose.Schema({
         type:mongoose.ObjectId,
         ref:'Renter'
     },
-    chekPikadon:{
+    checkPikadon:{
         type:Boolean,
         default:false
     },
@@ -32,6 +32,10 @@ const rentsSchema = new mongoose.Schema({
     sumPayment:{
         type:Number,
         required:true
+    },
+    description: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

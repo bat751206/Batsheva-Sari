@@ -39,7 +39,7 @@ const AddOutcome = ({setAddNew}) => {
                 <option value="אשראי דיירקט">אשראי דיירקט</option>
             </select>
            
-            <button type='submit' onSubmit={addOutcome}>שליחה</button>
+            <button type='submit'>שליחה</button>
         </form></>
     )
 }

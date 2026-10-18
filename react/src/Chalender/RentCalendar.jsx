@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { calendar, Location } from '@hebcal/core'
 import { HDate, isLeapYear } from '@hebcal/hdate'
 import './RentCalendar.css'
@@ -146,6 +146,9 @@ const RentCalendar = () => {
     })
     //
     const [showAddRental, setShowAddRental] = useState(false)
+    const [showTasks, setShowTasks] = useState(false)
+    const [contextMenu, setContextMenu] = useState(null)
+    const contextMenuRef = useRef(null)
 
     const calendarDays = useMemo(() => buildMonthGrid(currentMonth), [currentMonth])
     const dayDataByDate = useMemo(
@@ -178,6 +181,24 @@ const RentCalendar = () => {
     const currentHebrewMonth = new HDate(currentMonth)
     const monthLabel = `${getHebrewMonthName(currentHebrewMonth)} ${getHebrewYearLabel(currentHebrewMonth)}`
     const selectedHebrew = getHebrewDate(selectedDate, dayDataByDate.get(new HDate(selectedDate).abs()))
+
+    useEffect(() => {
+        if (!contextMenu) return undefined
+
+        const closeOnOutsideClick = (event) => {
+            if (!contextMenuRef.current?.contains(event.target)) setContextMenu(null)
+        }
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') setContextMenu(null)
+        }
+
+        document.addEventListener('mousedown', closeOnOutsideClick)
+        document.addEventListener('keydown', closeOnEscape)
+        return () => {
+            document.removeEventListener('mousedown', closeOnOutsideClick)
+            document.removeEventListener('keydown', closeOnEscape)
+        }
+    }, [contextMenu])
 
     const changeMonth = (months) => {
         const firstDay = new HDate(1, currentHebrewMonth.getMonth(), currentHebrewMonth.getFullYear())
@@ -250,23 +271,33 @@ const RentCalendar = () => {
             hebrewDate.getFullYear() === currentHebrewMonth.getFullYear()
     }
 
+    // useEffect(() => {
+    //     let isMounted = true
+
+    //     const getAllRentals = async () => {
+    //         try {
+    //             const response = await axios.get('http://localhost:7200/api/rents')
+    //             if (isMounted) setRentals(Array.isArray(response.data) ? response.data : [])
+    //         } catch (error) {
+    //             console.error('Failed to load rentals', error)
+    //         }
+    //     }
+
+    //     getAllRentals()
+    //     return () => {
+    //         isMounted = false
+    //     }
+    // }, [])
+    const [rentalReloadKey, setRentalReloadKey] = useState(0)
+
     useEffect(() => {
-        let isMounted = true
-
-        const getAllRentals = async () => {
-            try {
-                const response = await axios.get('http://localhost:7200/api/rents')
-                if (isMounted) setRentals(Array.isArray(response.data) ? response.data : [])
-            } catch (error) {
-                console.error('Failed to load rentals', error)
-            }
+        const loadRentals = async () => {
+            const response = await axios.get('http://localhost:7200/api/rents')
+            setRentals(Array.isArray(response.data) ? response.data : [])
         }
 
-        getAllRentals()
-        return () => {
-            isMounted = false
-        }
-    }, [])
+        loadRentals()
+    }, [rentalReloadKey])
 
     return (
         <div className="calendar-page" dir="rtl">
@@ -416,14 +447,26 @@ const RentCalendar = () => {
                                     hasRental ? 'rental' : '',
                                 ].join(' ')}
                                 onClick={() => {
-
                                     setSelectedDate(date)
-                                    setShowAddRental(!showAddRental)
-
+                                    setShowAddRental(false)
+                                    setShowTasks(false)
+                                    setContextMenu(null)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
-
                                 }}
-                                title={dayTitle}
+                                onDoubleClick={(event) => {
+                                    event.preventDefault()
+                                    setSelectedDate(date)
+                                    if (!isCurrentMonth(date)) setCurrentMonth(date)
+                                    const menuWidth = 210
+                                    const menuHeight = 104
+                                    setContextMenu({
+                                        date,
+                                        left: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
+                                        top: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8)),
+                                    })
+                                }}
+                                aria-haspopup="menu"
+                                title={`${dayTitle} · לחיצה כפולה לפתיחת פעולות`}
                             >
                                 <span className="gregorian-day">{date.getDate()}</span>
                                 <span className="hebrew-day">{hebrew.dayLabel}</span>
@@ -437,7 +480,53 @@ const RentCalendar = () => {
                         )
                     })}
 
-                    {showAddRental && <AddRental selectedDate={selectedDate} setShowAddRental={setShowAddRental} />}
+                    {contextMenu && <div
+                        className="calendar-action-menu"
+                        role="menu"
+                        aria-label={`פעולות ליום ${contextMenu.date.getDate()}`}
+                        ref={contextMenuRef}
+                        style={{ left: contextMenu.left, top: contextMenu.top }}
+                    >
+                        <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                                setSelectedDate(contextMenu.date)
+                                setShowTasks(false)
+                                setShowAddRental(true)
+                                setContextMenu(null)
+                            }}
+                        >
+                            <i className="pi pi-plus" aria-hidden="true" />
+                            הוסף השכרה
+                        </button>
+                        <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                                setSelectedDate(contextMenu.date)
+                                setShowAddRental(false)
+                                setShowTasks(true)
+                                setContextMenu(null)
+                            }}
+                        >
+                            <i className="pi pi-list" aria-hidden="true" />
+                            הצג משימות
+                        </button>
+                    </div>}
+
+                    {showAddRental && <AddRental
+                        selectedDate={selectedDate}
+                        setShowAddRental={setShowAddRental}
+                        onRentalAdded={() => setRentalReloadKey((key) => key + 1)}
+                    />}
+                    {showTasks && <section className="calendar-tasks-empty" aria-live="polite">
+                        <div>
+                            <h3>משימות לתאריך {selectedHebrew.display}</h3>
+                            <p>אין משימות להצגה כרגע.</p>
+                        </div>
+                        <button type="button" onClick={() => setShowTasks(false)} aria-label="סגירת המשימות">×</button>
+                    </section>}
 
                 </div>
             </div>
