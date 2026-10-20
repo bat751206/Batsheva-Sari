@@ -4,6 +4,7 @@ import { HDate, isLeapYear } from '@hebcal/hdate'
 import './RentCalendar.css'
 import axios from 'axios'
 import AddRental from './AddRental'
+import ShowCurrentRental from './ShowCurrentRental'
 const weekdayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
 
 const hebrewDayLetters = {
@@ -146,6 +147,7 @@ const RentCalendar = () => {
     })
     //
     const [showAddRental, setShowAddRental] = useState(false)
+    const [showRentalDetails, setShowRentalDetails] = useState(false)
     const [showTasks, setShowTasks] = useState(false)
     const [contextMenu, setContextMenu] = useState(null)
     const contextMenuRef = useRef(null)
@@ -181,6 +183,10 @@ const RentCalendar = () => {
     const currentHebrewMonth = new HDate(currentMonth)
     const monthLabel = `${getHebrewMonthName(currentHebrewMonth)} ${getHebrewYearLabel(currentHebrewMonth)}`
     const selectedHebrew = getHebrewDate(selectedDate, dayDataByDate.get(new HDate(selectedDate).abs()))
+    //
+    const contextMenuRentals = contextMenu
+        ? rentalsByDate.get(formatDateInput(contextMenu.date)) || []
+        : []
 
     useEffect(() => {
         if (!contextMenu) return undefined
@@ -425,10 +431,15 @@ const RentCalendar = () => {
                         const selected = isSelected(date)
                         const holidayClass = hebrew.holiday ? 'holiday' : ''
                         const isShabbat = date.getDay() === 6
-                        const hasRental = rentalsByDate.has(formatDateInput(date))
+                        const dayRentals = rentalsByDate.get(formatDateInput(date)) || []
+                        const hasRental = dayRentals.length > 0
+                        const renterNames = dayRentals
+                            .map((rental) => rental.renter?.name)
+                            .filter(Boolean)
                         const dayTitle = [
-                            hebrew.holiday || hebrew.display,
-                            hasRental ? 'יש השכרה בתאריך זה' : '',
+                            hebrew.display,
+                            hebrew.holiday,
+                            hasRental ? `שוכר: ${renterNames.join(', ') || 'שם השוכר לא זמין'}` : '',
                         ].filter(Boolean).join(' · ')
 
                         return (
@@ -449,6 +460,7 @@ const RentCalendar = () => {
                                 onClick={() => {
                                     setSelectedDate(date)
                                     setShowAddRental(false)
+                                    setShowRentalDetails(false)
                                     setShowTasks(false)
                                     setContextMenu(null)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
@@ -456,6 +468,10 @@ const RentCalendar = () => {
                                 onDoubleClick={(event) => {
                                     event.preventDefault()
                                     setSelectedDate(date)
+                                    //
+                                    setShowAddRental(false)
+                                    setShowRentalDetails(false)
+                                    setShowTasks(false)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
                                     const menuWidth = 210
                                     const menuHeight = 104
@@ -471,6 +487,14 @@ const RentCalendar = () => {
                                 <span className="gregorian-day">{date.getDate()}</span>
                                 <span className="hebrew-day">{hebrew.dayLabel}</span>
                                 {hebrew.holiday && <span className="holiday-tag">{hebrew.holiday}</span>}
+                                {hasRental && <span className="rental-tooltip" role="tooltip">
+                                    <strong>{hebrew.display}</strong>
+                                    {dayRentals.map((rental, rentalIndex) => (
+                                        <span key={rental._id || rentalIndex}>
+                                            {rental.renter?.name || 'שם השוכר לא זמין'}
+                                        </span>
+                                    ))}
+                                </span>}
                                 {isShabbat && <span className="shabbat-details">
                                     {dayData?.parsha && <span>{dayData.parsha}</span>}
                                     {dayData?.candleTime && <span>כניסה {dayData.candleTime}</span>}
@@ -493,12 +517,13 @@ const RentCalendar = () => {
                             onClick={() => {
                                 setSelectedDate(contextMenu.date)
                                 setShowTasks(false)
-                                setShowAddRental(true)
+                                setShowAddRental(contextMenuRentals.length === 0)
+                                setShowRentalDetails(contextMenuRentals.length > 0)
                                 setContextMenu(null)
                             }}
                         >
-                            <i className="pi pi-plus" aria-hidden="true" />
-                            הוסף השכרה
+                            <i className={`pi ${contextMenuRentals.length > 0 ? 'pi-eye' : 'pi-plus'}`} aria-hidden="true" />
+                            {contextMenuRentals.length > 0 ? 'הצגת השכרה' : 'הוסף השכרה'}
                         </button>
                         <button
                             type="button"
@@ -520,6 +545,8 @@ const RentCalendar = () => {
                         setShowAddRental={setShowAddRental}
                         onRentalAdded={() => setRentalReloadKey((key) => key + 1)}
                     />}
+                    {showRentalDetails && <ShowCurrentRental setShowRentalDetails={setShowRentalDetails} selectedHebrew={selectedHebrew} rentalsByDate ={rentalsByDate }
+                    formatDateInput ={formatDateInput } selectedDate ={selectedDate }/>}
                     {showTasks && <section className="calendar-tasks-empty" aria-live="polite">
                         <div>
                             <h3>משימות לתאריך {selectedHebrew.display}</h3>
