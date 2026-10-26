@@ -5,7 +5,7 @@ const Header = () => {
     const links = [
         { label: 'כספים', to: '/account' },
         { label: 'השכרות', to: '/rents' },
-        { label: 'מלאי', to: '/stock' },
+        { label: 'מלאי', to: '/amount' },
         { label: 'משימות', to: '/tasks' },
     ]
 

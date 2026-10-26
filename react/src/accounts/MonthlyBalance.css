@@ -1,0 +1,309 @@
+.monthly-balance-page {
+  --balance-ink: #193b39;
+  --balance-muted: #718682;
+  --balance-border: #e1ebe8;
+  color: var(--balance-ink);
+}
+
+.monthly-balance-heading {
+  align-items: flex-end;
+}
+
+.monthly-balance-heading h1 {
+  color: #173c3b;
+}
+
+.monthly-balance-subtitle {
+  margin: 0.55rem 0 0;
+  color: var(--balance-muted);
+  font-size: 1rem;
+}
+
+.monthly-balance-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.monthly-balance-period,
+.monthly-balance-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.7rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.7rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.monthly-balance-period {
+  color: #38665c;
+  background: #eaf4ef;
+}
+
+.monthly-balance-refresh {
+  color: #365c56;
+  background: #fff;
+  border: 1px solid var(--balance-border);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.monthly-balance-refresh:hover:not(:disabled) {
+  background: #f4f8f6;
+}
+
+.monthly-balance-refresh:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.balance-result {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  overflow: hidden;
+  min-height: 10rem;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(115deg, #eaf4ee 0%, #f0f6f4 58%, #edf2f8 100%);
+  border: 1px solid #dce9e3;
+  border-radius: 1rem;
+}
+
+.balance-result::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.35rem;
+  background: #278263;
+  content: '';
+}
+
+.balance-result.is-negative::before {
+  background: #c35465;
+}
+
+.balance-result.is-even::before {
+  background: #4975a4;
+}
+
+.balance-result-copy p {
+  margin: 0 0 0.45rem;
+  color: #5a7771;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.balance-result-copy h2 {
+  margin: 0;
+  color: #1d493e;
+  font-size: 1.35rem;
+}
+
+.balance-result.is-negative .balance-result-copy h2 {
+  color: #9f3e4c;
+}
+
+.balance-result.is-even .balance-result-copy h2 {
+  color: #365f8e;
+}
+
+.balance-result-amount {
+  color: #1b684e;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.balance-result.is-negative .balance-result-amount {
+  color: #ad4353;
+}
+
+.balance-result.is-even .balance-result-amount {
+  color: #365f8e;
+}
+
+.balance-result-amount small {
+  font-size: 1.1rem;
+}
+
+.balance-breakdown {
+  padding: 1.35rem 1.5rem 1.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--balance-border);
+  border-radius: 0.9rem;
+}
+
+.balance-breakdown-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.balance-breakdown-heading h2 {
+  margin: 0;
+  color: #1d403c;
+  font-size: 1.15rem;
+}
+
+.balance-breakdown-heading p {
+  margin: 0.35rem 0 0;
+  color: var(--balance-muted);
+  font-size: 0.88rem;
+}
+
+.balance-breakdown-heading > span {
+  color: #6a817c;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.balance-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.balance-metric {
+  min-width: 0;
+  padding: 1.25rem 1rem 0;
+}
+
+.balance-metric + .balance-metric {
+  border-inline-start: 1px solid #edf1ef;
+}
+
+.balance-metric-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.balance-metric-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.6rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.7rem;
+}
+
+.income-metric .balance-metric-icon {
+  color: #16795b;
+  background: #e8f5ee;
+}
+
+.expenses-metric .balance-metric-icon {
+  color: #bd4b5d;
+  background: #fff0f1;
+}
+
+.balance-metric-heading p {
+  margin: 0 0 0.25rem;
+  color: var(--balance-muted);
+  font-size: 0.88rem;
+}
+
+.balance-metric-heading strong {
+  color: #24443f;
+  font-size: 1.15rem;
+  white-space: nowrap;
+}
+
+.balance-meter {
+  height: 0.5rem;
+  overflow: hidden;
+  margin-top: 1rem;
+  background: #edf1ef;
+  border-radius: 999px;
+}
+
+.balance-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 240ms ease;
+}
+
+.income-metric .balance-meter span {
+  background: #3c9b77;
+}
+
+.expenses-metric .balance-meter span {
+  background: #d8757e;
+}
+
+.monthly-balance-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1rem;
+  color: #667b76;
+  background: #f6f9f8;
+  border-radius: 0.75rem;
+}
+
+.monthly-balance-error {
+  color: #a5353b;
+  background: #fff4f3;
+}
+
+.monthly-balance-error button {
+  margin-inline-start: auto;
+  padding: 0.4rem 0.7rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 0.55rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+@media (max-width: 640px) {
+  .monthly-balance-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .monthly-balance-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .balance-result {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.4rem;
+  }
+
+  .balance-result-amount {
+    font-size: 1.9rem;
+  }
+
+  .balance-breakdown {
+    padding: 1rem;
+  }
+
+  .balance-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .balance-metric {
+    padding-inline: 0;
+  }
+
+  .balance-metric + .balance-metric {
+    padding-top: 1.1rem;
+    border-top: 1px solid #edf1ef;
+    border-inline-start: 0;
+  }
+}

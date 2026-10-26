@@ -12,7 +12,7 @@ connectDB()
 app.use(cors(corsOptions))
 app.use(express.json())
 
-app.use("/api/story",require("./routes/storyRoute"))
+// app.use("/api/story",require("./routes/storyRoute"))
 app.use("/api/auth",require("./routes/authRoute"))
 app.use("/api/incomes",require("./routes/incomesRoute"))
 app.use("/api/outcomes",require("./routes/outcomesRoute"))
