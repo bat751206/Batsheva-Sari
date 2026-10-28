@@ -6,7 +6,7 @@ const Header = () => {
         { label: 'כספים', to: '/account' },
         { label: 'השכרות', to: '/rents' },
         { label: 'מלאי', to: '/amount' },
-        { label: 'משימות', to: '/tasks' },
+        { label: 'משימות', to: '/todos' },
     ]
 
     return (

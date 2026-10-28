@@ -1,16 +1,26 @@
 const Todo = require("../models/todos")
 
 const createNewTodo = async (req, res) => {
-    const { title,tags,complete  } = req.body
-    if (!title) {
+    const { title, isTemporary } = req.body
+    const cleanTitle = typeof title === "string" ? title.trim() : ""
+    if (!cleanTitle) {
         return res.send("title is required")
     }
-    const todo = await Todo.create({title,tags,complete,user:req.user._id })
+    let todo= await Todo.findOne({ title: cleanTitle })
+    if(todo){
+        return res.send("title must be uniqe")
+    }
+    const temporary = isTemporary === true
+    todo = await Todo.create({
+        title: cleanTitle,
+        isTemporary: temporary,
+        show: !temporary
+    })
     res.json(todo)
 }
 
 const getAllTodos = async (req,res)=>{
-    const todos= await Todo.find({user:req.user._id })
+    const todos= await Todo.find()
     res.json(todos)
 }
 
@@ -21,14 +31,23 @@ const getTodoById = async (req,res) =>{
 }
 
 const updateTodo = async (req,res) =>{
-    const {id,title,tags,complete} =req.body
-    if(!id || !title){
-        return res.send("id and title is required")
+    const {title} =req.body
+    if( !title){
+        return res.send("title is required")
     }
-    let todo= await Todo.findById(id)
-    todo.title=title
-    todo.tags=tags
-    todo.complete=complete
+    let todo= await Todo.findOne({title})
+    todo.status=!todo.status
+    await todo.save()
+    res.json(todo) 
+}
+
+const changeDisplay = async (req,res) =>{
+    const {title} =req.body
+    if( !title){
+        return res.send("title is required")
+    }
+    let todo= await Todo.findOne({title})
+    todo.show=!todo.show
     await todo.save()
     res.json(todo) 
 }
@@ -42,4 +61,4 @@ const deleteTodo= async (req,res) =>{
 
 
 
-module.exports = { createNewTodo ,getAllTodos, getTodoById,updateTodo,deleteTodo}
+module.exports = { createNewTodo ,getAllTodos, getTodoById,updateTodo,deleteTodo,changeDisplay}

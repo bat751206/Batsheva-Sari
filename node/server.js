@@ -19,6 +19,7 @@ app.use("/api/outcomes",require("./routes/outcomesRoute"))
 app.use("/api/rents",require("./routes/rentsRoute"))
 app.use("/api/renters",require("./routes/rentersRoute"))
 app.use("/api/amount",require("./routes/amountRoute"))
+app.use("/api/todos",require("./routes/todosRoute"))
 
 //routes
 app.get("/", (req, res) => {

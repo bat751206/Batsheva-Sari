@@ -3,16 +3,22 @@ const todoSchema = new mongoose.Schema({
     title: {
         type: mongoose.Schema.Types.String,
         required: true,
+        uniqe: true
     },
-    tags: [String],
-    complete: {
+
+    status: {
         type: Boolean,
         default: false
     },
-    user: {
-        type: mongoose.ObjectId,
-        ref:'User'}
-}, {
-    timestamps: true
-})
+    isTemporary: {
+        type: Boolean,
+        default: false
+    },
+    show:{
+        type:Boolean,
+        default: true
+    }
+},
+    { timestamps: true }
+)
 module.exports = mongoose.model('Todo', todoSchema)
