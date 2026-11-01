@@ -2,12 +2,13 @@ import React from 'react'
 import axios from 'axios'
 import { useState } from 'react'
 
-const SingleTodo = ({ todo }) => {
+const SingleTodo = ({ todo, onTodoUpdated }) => {
     const [isComplete, setIsComplete] = useState(Boolean(todo.status))
     const changeStatus = async () => {
         try {
             const { data } = await axios.put('http://127.0.0.1:7200/api/todos', { title: todo.title })
             setIsComplete(Boolean(data.status))
+            onTodoUpdated(data)
 
         }
         catch {
@@ -26,9 +27,7 @@ const SingleTodo = ({ todo }) => {
                 <span className={`todo-item-status${isComplete ? ' todo-item-status-completed' : ''}`}>
                     {isComplete ? 'הושלם' : 'לביצוע'}
                 </span>
-                <span className={`todo-item-type${todo.isTemporary ? ' todo-item-type-temporary' : ''}`}>
-                    {todo.isTemporary ? 'זמנית' : 'קבועה'}
-                </span>
+                
             </span>
         </li>
     )

@@ -4,6 +4,7 @@ const renterController = require("../controllers/rentersController")
 
 router.post("/",renterController.createNewRenter )
 router.get("/",renterController.getAllRenters)
+router.get("/lookup",renterController.getRenterByNameAndPhone)
 router.get("/:id",renterController.getRenterById)
 router.put("/",renterController.updateRenter)
 router.delete("/:id",renterController.deleteRenter)

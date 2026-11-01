@@ -17,6 +17,10 @@ const rentsSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
+    todoListActivated: {
+        type: Boolean,
+        default: false
+    },
     renter:{
         type:mongoose.ObjectId,
         ref:'Renter'
@@ -32,6 +36,14 @@ const rentsSchema = new mongoose.Schema({
     sumPayment:{
         type:Number,
         required:true
+    },
+    isPaid:{
+        type:Boolean,
+        default:false
+    },
+    paymentType:{
+        type:String,
+        enum:['מזומן','העברה',"צ'ק"]
     },
     description: {
         type: String,

@@ -57,6 +57,15 @@
   transform: translateY(-1px);
 }
 
+.todos-add-button:disabled,
+.todos-add-button:disabled:hover {
+  background: #9ca3af;
+  box-shadow: none;
+  color: #f3f4f6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .todos-add-button:focus-visible,
 .todo-check input:focus-visible + .todo-checkbox {
   outline: 3px solid rgba(99, 102, 241, 0.35);
@@ -84,6 +93,23 @@
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045);
+}
+
+.todos-rental-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+
+.todos-rental-stat {
+  min-width: 0;
+  align-items: center;
+  text-align: center;
+}
+
+.todos-rental-stat + .todos-rental-stat {
+  border-inline-start: 1px solid #e2e8f0;
+  padding-inline-start: 0.6rem;
 }
 
 .todos-stat-icon {

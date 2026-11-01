@@ -34,6 +34,15 @@ const getAllRents = async (req,res)=>{
     res.json(rents)
 }
 
+const getNearestRent = async (req, res) => {
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const rent = await Rents.findOne({ date: { $gte: today } })
+        .sort({ date: 1 })
+        .populate("renter", "name")
+    res.json(rent)
+}
+
 const getRentById = async (req,res) =>{
     const {id}= req.params
     const rent= await Rents.findById(id)
@@ -46,15 +55,29 @@ const updateRent = async (req,res) =>{
         return res.send("id is required")
     }
     let rent= await Rents.findById(id)
+    const previousSchedule = `${new Date(rent.date).toISOString().slice(0, 10)}:${rent.numOfNights}`
+    const updatedSchedule = `${new Date(date).toISOString().slice(0, 10)}:${numOfNights}`
    
     rent.date=date
     rent.numOfBeds=numOfBeds
     rent.numOfBabyBeds=numOfBabyBeds
     rent.numOfNights=numOfNights
+    if (previousSchedule !== updatedSchedule) rent.todoListActivated = false
     rent.renter=renter
-    rent.chekPikadon=chekPikadon
+    rent.checkPikadon=chekPikadon
     rent.tivuch=tivuch
     rent.sumPayment=sumPayment
+    await rent.save()
+    res.json(rent) 
+}
+const paymentUpdateRent = async (req,res) =>{
+    const {id,paymentType} =req.body
+    if(!id){
+        return res.send("id is required")
+    }
+    let rent= await Rents.findById(id)
+    rent.isPaid=true
+    rent.paymentType=paymentType
     await rent.save()
     res.json(rent) 
 }
@@ -90,5 +113,5 @@ const isDateAvailable = async (date, numOfNights) => {
 }
 
 
-module.exports = { createNewRent ,getAllRents, getRentById,updateRent,deleteRent}
+module.exports = { createNewRent ,getAllRents, getNearestRent, getRentById,updateRent,deleteRent,paymentUpdateRent}
 

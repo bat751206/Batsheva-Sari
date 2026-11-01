@@ -1,16 +1,18 @@
 const Renters = require("../models/renters")
 const Rents = require("../models/rents")
 
+const findRenterByNameAndPhone = async (name, phone) => Renters.findOne({
+    name: name.trim(),
+    phone: phone.trim()
+})
+
 const createNewRenter = async ( name, phone, email, city, advertisement) => {
-    
     if (!name || !phone) {
         throw new Error("name and phone are required")
     }
-    const renterId = await getIdByName(name)
-    if (renterId === -1) {
-        return Renters.create({ name, phone, email, city, advertisement })
-    }
-    return Renters.findById(renterId)
+    const existingRenter = await findRenterByNameAndPhone(name, phone)
+    if (existingRenter) return existingRenter
+    return Renters.create({ name, phone, email, city, advertisement })
 
 }
 
@@ -23,6 +25,19 @@ const getRenterById = async (req, res) => {
     const { id } = req.params
     const renter = await Renters.findById(id)
     res.json(renter)
+}
+
+const getRenterByNameAndPhone = async (req, res) => {
+    const { name, phone } = req.query
+    if (!name?.trim() || !phone?.trim()) {
+        return res.status(400).json({ message: "name and phone are required" })
+    }
+    const renter = await findRenterByNameAndPhone(name, phone)
+    res.json(renter ? {
+        email: renter.email,
+        city: renter.city,
+        advertisement: renter.advertisement
+    } : null)
 }
 
 const updateRenter = async (req, res) => {
@@ -63,4 +78,4 @@ const getIdByName = async (name) => {
 
 
 
-module.exports = { createNewRenter, getAllRenters, getRenterById, updateRenter, deleteRenter, getIdByName, addrentalToRenter }
+module.exports = { createNewRenter, getAllRenters, getRenterById, getRenterByNameAndPhone, updateRenter, deleteRenter, getIdByName, addrentalToRenter }

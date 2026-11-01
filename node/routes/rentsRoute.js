@@ -4,9 +4,10 @@ const rentController = require("../controllers/rentsController")
 
 router.post("/",rentController.createNewRent )
 router.get("/",rentController.getAllRents)
+router.get("/nearest",rentController.getNearestRent)
 router.get("/:id",rentController.getRentById)
 router.put("/",rentController.updateRent)
 router.delete("/:id",rentController.deleteRent)
-
+router.put("/payment",rentController.paymentUpdateRent)
 
 module.exports = router

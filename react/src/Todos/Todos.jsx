@@ -6,11 +6,16 @@ import './Todos.css'
 
 const Todos = () => {
     const [info, setInfo] = useState([])
+    const [todoWindowOpen, setTodoWindowOpen] = useState(false)
     const [add, setAdd] = useState(false)
+    const [current, setCurrent] = useState(null)
     const getData = async () => {
         try {
             const { data } = await axios.get('http://127.0.0.1:7200/api/todos')
-            setInfo(data)
+            setInfo(data.todos)
+            setTodoWindowOpen(data.todoWindowOpen)
+            const { data: currentRent } = await axios.get('http://127.0.0.1:7200/api/rents/nearest')
+            setCurrent(currentRent)
         }
         catch {
             console.log('Error in connecting to the database')
@@ -20,8 +25,11 @@ const Todos = () => {
     useEffect(() => {
         getData()
     }, [])
-
-    const activeTodos = info.filter((todo) => todo.show)
+     
+    const visibleTodos = todoWindowOpen
+        ? info.filter((todo) => todo.show)
+        : []
+    const activeTodos = visibleTodos.filter((todo) => !todo.status)
     const availableTodos = info.filter((todo) => !todo.show)
 
     return (
@@ -30,11 +38,11 @@ const Todos = () => {
                 <div>
                     <p className="todos-eyebrow">עושות סדר ביום</p>
                     <h1>המשימות שלנו</h1>
-                    <p className="todos-description">כל מה שצריך לעשות, במקום אחד.</p>
                 </div>
                 <button
                     className="todos-add-button"
                     type="button"
+                    disabled={activeTodos.length === 0}
                     onClick={() => setAdd(!add)}
                     aria-expanded={add}
                 >
@@ -51,11 +59,18 @@ const Todos = () => {
                         <span>משימות לביצוע</span>
                     </div>
                 </div>
-                <div className="todos-stat">
-                    <span className="todos-stat-icon todos-stat-icon-muted" aria-hidden="true">＋</span>
-                    <div>
-                        <strong>{availableTodos.length}</strong>
-                        <span>משימות זמינות</span>
+                <div className="todos-stat todos-rental-stats">
+                    <div className="todos-rental-stat">
+                        <strong>{current?.numOfBeds || 0}</strong>
+                        <span>מספר מיטות</span>
+                    </div>
+                    <div className="todos-rental-stat">
+                        <strong>{current?.numOfBabyBeds || 0}</strong>
+                        <span> מספר מיטות תינוק</span>
+                    </div>
+                    <div className="todos-rental-stat">
+                        <strong>{current?.numOfNights || 0}</strong>
+                        <span>מספר לילות</span>
                     </div>
                 </div>
             </div>
@@ -69,17 +84,22 @@ const Todos = () => {
                     <span className="todos-count">{activeTodos.length}</span>
                 </div>
 
-                {activeTodos.length > 0 ? (
+                {visibleTodos.length > 0 ? (
                     <ul className="todos-list">
-                        {activeTodos.map((todo) => (
-                            <SingleTodo key={todo._id ?? todo.id ?? todo.title} todo={todo} />
+                        {visibleTodos.map((todo) => (
+                            <SingleTodo
+                                key={todo._id ?? todo.id ?? todo.title}
+                                todo={todo}
+                                onTodoUpdated={(updatedTodo) => setInfo((current) => current.map((item) => (
+                                    item._id === updatedTodo._id ? updatedTodo : item
+                                )))}
+                            />
                         ))}
                     </ul>
                 ) : (
                     <div className="todos-empty">
                         <span className="todos-empty-icon" aria-hidden="true">✓</span>
-                        <p>אין כרגע משימות לביצוע</p>
-                        <span>אפשר להוסיף משימה מהרשימה הזמינה.</span>
+                        <p>אין משימות לביצוע</p>
                     </div>
                 )}
             </section>

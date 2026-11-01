@@ -8,6 +8,7 @@ import RentCalendar from './Chalender/RentCalendar'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ShowStock from './stock/ShowStock'
 import Todos from './Todos/Todos'
+import HomePage from './Components/HomePage'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Router>
         <Routes>
           <Route path='/' element={<Layout />}>
+            <Route index element={<HomePage />} />
             <Route path='/account' element={<Accounts />} />
             <Route path='/account/incomes' element={<Incomes />} />
             <Route path='/account/outcomes' element={<Outcomes />} />

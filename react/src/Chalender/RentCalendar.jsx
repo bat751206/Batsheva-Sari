@@ -5,6 +5,7 @@ import './RentCalendar.css'
 import axios from 'axios'
 import AddRental from './AddRental'
 import ShowCurrentRental from './ShowCurrentRental'
+import UpdatePayment from './UpdatePayment'
 const weekdayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
 
 const hebrewDayLetters = {
@@ -149,6 +150,7 @@ const RentCalendar = () => {
     const [showAddRental, setShowAddRental] = useState(false)
     const [showRentalDetails, setShowRentalDetails] = useState(false)
     const [showTasks, setShowTasks] = useState(false)
+    const [paymentRental, setPaymentRental] = useState(null)
     const [contextMenu, setContextMenu] = useState(null)
     const contextMenuRef = useRef(null)
 
@@ -180,13 +182,46 @@ const RentCalendar = () => {
 
         return dateMap
     }, [rentals])
+    const rentalEdgesByDate = useMemo(() => {
+        const edgeMap = new Map()
+        const addRentalEdge = (dateKey, edge, rental) => {
+            if (!edgeMap.has(dateKey)) edgeMap.set(dateKey, { starts: [], ends: [] })
+            edgeMap.get(dateKey)[edge].push(rental)
+        }
+
+        rentals.forEach((rental) => {
+            const startDateValue = String(rental.date || '').slice(0, 10)
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(startDateValue)) return
+
+            const [year, month, day] = startDateValue.split('-').map(Number)
+            const startDate = new Date(year, month - 1, day, 12)
+            const nights = Math.floor(Number(rental.numOfNights))
+            if (!Number.isFinite(startDate.getTime()) || nights < 1) return
+
+            const endDate = new Date(startDate)
+            endDate.setDate(startDate.getDate() + nights)
+            addRentalEdge(formatDateInput(startDate), 'starts', rental)
+            addRentalEdge(formatDateInput(endDate), 'ends', rental)
+        })
+
+        return edgeMap
+    }, [rentals])
     const currentHebrewMonth = new HDate(currentMonth)
     const monthLabel = `${getHebrewMonthName(currentHebrewMonth)} ${getHebrewYearLabel(currentHebrewMonth)}`
     const selectedHebrew = getHebrewDate(selectedDate, dayDataByDate.get(new HDate(selectedDate).abs()))
     //
-    const contextMenuRentals = contextMenu
-        ? rentalsByDate.get(formatDateInput(contextMenu.date)) || []
+    const contextMenuDateKey = contextMenu ? formatDateInput(contextMenu.date) : null
+    const contextMenuOccupiedRentals = contextMenu
+        ? rentalsByDate.get(contextMenuDateKey) || []
         : []
+    const contextMenuRentalEdges = contextMenu
+        ? rentalEdgesByDate.get(contextMenuDateKey) || { starts: [], ends: [] }
+        : { starts: [], ends: [] }
+    const contextMenuRentals = [...new Set([
+        ...contextMenuOccupiedRentals,
+        ...contextMenuRentalEdges.starts,
+        ...contextMenuRentalEdges.ends,
+    ])]
 
     useEffect(() => {
         if (!contextMenu) return undefined
@@ -205,6 +240,20 @@ const RentCalendar = () => {
             document.removeEventListener('keydown', closeOnEscape)
         }
     }, [contextMenu])
+
+    const deleteRental = async (rental) => {
+        const renterName = rental.renter?.name || 'השוכר'
+        if (!window.confirm(`למחוק את ההשכרה של ${renterName}?`)) return
+
+        try {
+            await axios.delete(`http://localhost:7200/api/rents/${rental._id}`)
+            setRentals((current) => current.filter((item) => item._id !== rental._id))
+            setContextMenu(null)
+        } catch (error) {
+            console.error('Failed to delete rental', error)
+            window.alert('לא ניתן למחוק את ההשכרה כרגע.')
+        }
+    }
 
     const changeMonth = (months) => {
         const firstDay = new HDate(1, currentHebrewMonth.getMonth(), currentHebrewMonth.getFullYear())
@@ -432,14 +481,23 @@ const RentCalendar = () => {
                         const holidayClass = hebrew.holiday ? 'holiday' : ''
                         const isShabbat = date.getDay() === 6
                         const dayRentals = rentalsByDate.get(formatDateInput(date)) || []
+                        const rentalEdges = rentalEdgesByDate.get(formatDateInput(date)) || { starts: [], ends: [] }
+                        const hasRentalStart = rentalEdges.starts.length > 0
+                        const hasRentalEnd = rentalEdges.ends.length > 0
                         const hasRental = dayRentals.length > 0
-                        const renterNames = dayRentals
+                        const markedRentals = [...new Set([
+                            ...dayRentals,
+                            ...rentalEdges.starts,
+                            ...rentalEdges.ends,
+                        ])]
+                        const hasRentalMark = hasRental || hasRentalStart || hasRentalEnd
+                        const renterNames = markedRentals
                             .map((rental) => rental.renter?.name)
                             .filter(Boolean)
                         const dayTitle = [
                             hebrew.display,
                             hebrew.holiday,
-                            hasRental ? `שוכר: ${renterNames.join(', ') || 'שם השוכר לא זמין'}` : '',
+                            hasRentalMark ? `שוכר: ${renterNames.join(', ') || 'שם השוכר לא זמין'}` : '',
                         ].filter(Boolean).join(' · ')
 
                         return (
@@ -455,7 +513,10 @@ const RentCalendar = () => {
                                     isShabbat ? 'shabbat' : '',
                                     dayData?.isCholHamoed ? 'chol-hamoed' : '',
                                     dayData?.isFast ? 'fast' : '',
-                                    hasRental ? 'rental' : '',
+                                    hasRental && !hasRentalStart ? 'rental' : '',
+                                    hasRentalMark ? 'rental-marked' : '',
+                                    hasRentalStart ? 'rental-start' : '',
+                                    hasRentalEnd ? 'rental-end' : '',
                                 ].join(' ')}
                                 onClick={() => {
                                     setSelectedDate(date)
@@ -474,7 +535,10 @@ const RentCalendar = () => {
                                     setShowTasks(false)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
                                     const menuWidth = 210
-                                    const menuHeight = 104
+                                    const menuHeight = 110 + markedRentals.reduce(
+                                        (height, rental) => height + (rental.isPaid ? 44 : 88),
+                                        0,
+                                    )
                                     setContextMenu({
                                         date,
                                         left: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
@@ -487,9 +551,9 @@ const RentCalendar = () => {
                                 <span className="gregorian-day">{date.getDate()}</span>
                                 <span className="hebrew-day">{hebrew.dayLabel}</span>
                                 {hebrew.holiday && <span className="holiday-tag">{hebrew.holiday}</span>}
-                                {hasRental && <span className="rental-tooltip" role="tooltip">
+                                {hasRentalMark && <span className="rental-tooltip" role="tooltip">
                                     <strong>{hebrew.display}</strong>
-                                    {dayRentals.map((rental, rentalIndex) => (
+                                    {markedRentals.map((rental, rentalIndex) => (
                                         <span key={rental._id || rentalIndex}>
                                             {rental.renter?.name || 'שם השוכר לא זמין'}
                                         </span>
@@ -517,13 +581,13 @@ const RentCalendar = () => {
                             onClick={() => {
                                 setSelectedDate(contextMenu.date)
                                 setShowTasks(false)
-                                setShowAddRental(contextMenuRentals.length === 0)
-                                setShowRentalDetails(contextMenuRentals.length > 0)
+                                setShowAddRental(contextMenuOccupiedRentals.length === 0)
+                                setShowRentalDetails(contextMenuOccupiedRentals.length > 0)
                                 setContextMenu(null)
                             }}
                         >
-                            <i className={`pi ${contextMenuRentals.length > 0 ? 'pi-eye' : 'pi-plus'}`} aria-hidden="true" />
-                            {contextMenuRentals.length > 0 ? 'הצגת השכרה' : 'הוסף השכרה'}
+                            <i className={`pi ${contextMenuOccupiedRentals.length > 0 ? 'pi-eye' : 'pi-plus'}`} aria-hidden="true" />
+                            {contextMenuOccupiedRentals.length > 0 ? 'הצגת השכרה' : 'הוסף השכרה'}
                         </button>
                         <button
                             type="button"
@@ -538,6 +602,30 @@ const RentCalendar = () => {
                             <i className="pi pi-list" aria-hidden="true" />
                             הצג משימות
                         </button>
+                        {contextMenuRentals.map((rental) => (
+                            <React.Fragment key={rental._id}>
+                                <button
+                                    className="calendar-action-menu-delete"
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => deleteRental(rental)}
+                                >
+                                    <i className="pi pi-trash" aria-hidden="true" />
+                                    מחיקת השכרה{rental.renter?.name ? ` - ${rental.renter.name}` : ''}
+                                </button>
+                                {rental.isPaid === false && <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setPaymentRental(rental)
+                                        setContextMenu(null)
+                                    }}
+                                >
+                                    <i className="pi pi-wallet" aria-hidden="true" />
+                                    עדכון תשלום{rental.renter?.name ? ` - ${rental.renter.name}` : ''}
+                                </button>}
+                            </React.Fragment>
+                        ))}
                     </div>}
 
                     {showAddRental && <AddRental
@@ -547,6 +635,27 @@ const RentCalendar = () => {
                     />}
                     {showRentalDetails && <ShowCurrentRental setShowRentalDetails={setShowRentalDetails} selectedHebrew={selectedHebrew} rentalsByDate ={rentalsByDate }
                     formatDateInput ={formatDateInput } selectedDate ={selectedDate }/>}
+                    {paymentRental && <div
+                        className="calendar-modal-backdrop"
+                        onMouseDown={(event) => {
+                            if (event.target === event.currentTarget) setPaymentRental(null)
+                        }}
+                    >
+                        <div className="calendar-modal-panel update-payment-panel" role="dialog" aria-modal="true" aria-labelledby="update-payment-title" dir="rtl">
+                            <div className="calendar-rental-details-header">
+                                <h3 id="update-payment-title">עדכון תשלום{paymentRental.renter?.name ? ` - ${paymentRental.renter.name}` : ''}</h3>
+                                <button type="button" onClick={() => setPaymentRental(null)} aria-label="סגירת עדכון התשלום">×</button>
+                            </div>
+                            <UpdatePayment
+                                rent={paymentRental}
+                                onClose={() => setPaymentRental(null)}
+                                onPaymentUpdated={() => {
+                                    setPaymentRental(null)
+                                    setRentalReloadKey((key) => key + 1)
+                                }}
+                            />
+                        </div>
+                    </div>}
                     {showTasks && <section className="calendar-tasks-empty" aria-live="polite">
                         <div>
                             <h3>משימות לתאריך {selectedHebrew.display}</h3>

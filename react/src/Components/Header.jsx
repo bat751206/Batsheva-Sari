@@ -12,10 +12,10 @@ const Header = () => {
     return (
         <header className="topbar-wrap">
             <div className="main-menubar">
-                <div className="brand-box">
+                <NavLink to="/" className="brand-box" aria-label="לדף הבית">
                     <span className="brand-icon pi pi-home" />
-                    <span>בַּת-שֶׁבַע ושרי</span>
-                </div>
+                    <span>לדף הבית</span>
+                </NavLink>
 
                 <nav className="header-nav" aria-label="Main navigation">
                     {links.map((link) => (

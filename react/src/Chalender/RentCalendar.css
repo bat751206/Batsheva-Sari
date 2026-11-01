@@ -251,7 +251,7 @@
 }
 
 .calendar-day.rental {
-  background: #bb80e2;
+  background: #daa9fa;
   border-color: #9b32e0;
 }
 
@@ -282,13 +282,13 @@
   overflow-wrap: anywhere;
 }
 
-.calendar-day.rental:hover,
-.calendar-day.rental:focus-visible {
+.calendar-day.rental-marked:hover,
+.calendar-day.rental-marked:focus-visible {
   z-index: 6;
 }
 
-.calendar-day.rental:hover .rental-tooltip,
-.calendar-day.rental:focus-visible .rental-tooltip {
+.calendar-day.rental-marked:hover .rental-tooltip,
+.calendar-day.rental-marked:focus-visible .rental-tooltip {
   display: block;
 }
 
@@ -297,6 +297,48 @@
 .calendar-day.selected.shabbat,
 .calendar-day.selected.chol-hamoed,
 .calendar-day.selected.fast {
+  background: #244d3d;
+  color: #fff;
+  border-color: #244d3d;
+}
+
+.calendar-day.rental-start {
+  background-image: linear-gradient(to right, #daa9fa 50%, transparent 50%);
+}
+
+.calendar-day.rental-end {
+  background-image: linear-gradient(to left, #daa9fa 50%, transparent 50%);
+}
+
+.calendar-day.rental-start.rental-end {
+  background-image:
+    linear-gradient(to right, #bb80e2 50%, transparent 50%),
+    linear-gradient(to left, #bb80e2 50%, transparent 50%);
+}
+
+.calendar-day.rental-start:not(.selected):not(.shabbat)::before,
+.calendar-day.rental-end:not(.selected):not(.shabbat)::before {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #9b32e0;
+  border-radius: inherit;
+  content: '';
+  pointer-events: none;
+}
+
+.calendar-day.rental-start:not(.rental-end)::before {
+  clip-path: inset(0 50% 0 0);
+}
+
+.calendar-day.rental-end:not(.rental-start)::before {
+  clip-path: inset(0 0 0 50%);
+}
+
+.calendar-day.shabbat.rental-marked {
+  background: #bb80e2;
+}
+
+.calendar-day.selected.rental-marked {
   background: #244d3d;
   color: #fff;
   border-color: #244d3d;
@@ -801,12 +843,117 @@
   color: #245b45;
 }
 
+.calendar-action-menu .calendar-action-menu-delete {
+  color: #a33131;
+}
+
+.calendar-action-menu .calendar-action-menu-delete:hover,
+.calendar-action-menu .calendar-action-menu-delete:focus-visible {
+  background: #fce8e8;
+  color: #8d2424;
+}
+
+.calendar-action-menu .calendar-action-menu-delete i {
+  color: inherit;
+}
+
 .calendar-action-menu i {
   width: 1.1rem;
   color: #3c795c;
   text-align: center;
 }
 
+.update-payment-panel {
+  width: min(100% - 2rem, 26rem);
+  padding: 1.25rem;
+  background: #fff;
+}
+
+.update-payment-form {
+  display: grid;
+  gap: 1.1rem;
+  padding-top: 1rem;
+}
+
+.update-payment-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #dce6df;
+  border-radius: 6px;
+  background: #f5f8f6;
+  color: #385344;
+}
+
+.update-payment-summary strong {
+  color: #244d3d;
+  font-size: 1.2rem;
+}
+
+.update-payment-field {
+  display: grid;
+  gap: 0.45rem;
+  color: #33483b;
+  font-weight: 600;
+}
+
+.update-payment-field select {
+  min-height: 2.8rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd8ce;
+  border-radius: 6px;
+  background: #fff;
+  color: #26372d;
+  font: inherit;
+}
+
+.update-payment-field select:focus-visible {
+  outline: 2px solid #3c795c;
+  outline-offset: 2px;
+}
+
+.update-payment-error {
+  margin: 0;
+  color: #a33131;
+  font-size: 0.9rem;
+}
+
+.update-payment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.update-payment-actions button {
+  min-height: 2.7rem;
+  padding: 0.55rem 0.9rem;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.update-payment-cancel {
+  background: #eef2ef;
+  color: #45554a;
+}
+
+.update-payment-confirm {
+  background: #286247;
+  color: #fff;
+}
+
+.update-payment-confirm:hover:not(:disabled) {
+  background: #1e5039;
+}
+
+.update-payment-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 
 
 

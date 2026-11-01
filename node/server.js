@@ -4,6 +4,7 @@ const mongoose=require("mongoose")
 const cors = require("cors")
 const corsOptions = require("./config/corsOptions")
 const connectDB = require("./config/connectDB")
+const { synchronizeScheduledTodos } = require("./controllers/todosController")
 const PORT = process.env.PORT || 7100
 const app = express()
 connectDB()
@@ -28,6 +29,10 @@ app.get("/", (req, res) => {
 
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB')
+    synchronizeScheduledTodos().catch((err) => console.error('Failed to sync scheduled todos', err))
+    setInterval(() => {
+        synchronizeScheduledTodos().catch((err) => console.error('Failed to sync scheduled todos', err))
+    }, 60 * 1000)
     app.listen(PORT, () => console.log(`Server running on port
 ${PORT}`))
 })

@@ -24,6 +24,7 @@ const ShowCurrentRental = ({setShowRentalDetails,selectedHebrew,rentalsByDate,fo
                                 {rental.numOfBabyBeds > 0 && <p>מיטות תינוק: {rental.numOfBabyBeds}</p>}
                                 {rental.sumPayment != null && <p>סכום לתשלום: {rental.sumPayment}</p>}
                                 {rental.description && <p>{rental.description}</p>}
+                                
                             </article>
                         ))}
                     </div>

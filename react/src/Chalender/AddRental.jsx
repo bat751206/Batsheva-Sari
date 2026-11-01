@@ -26,6 +26,7 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState('')
     const datePickerRef = useRef(null)
+    const formRef = useRef(null)
 
     useEffect(() => {
         if (!isCalendarOpen) return undefined
@@ -58,6 +59,31 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
     }).format(visibleMonth)
     const today = new Date()
 
+    const fillRegisteredRenter = async () => {
+        const form = formRef.current
+        const name = form?.elements.namedItem('renterName')?.value.trim()
+        const phone = form?.elements.namedItem('renterPhone')?.value.trim()
+        if (!name || !phone) return
+
+        try {
+            const { data: renter } = await axios.get('http://localhost:7200/api/renters/lookup', {
+                params: { name, phone }
+            })
+            if (!renter) return
+
+            Object.entries({
+                email: renter.email,
+                city: renter.city,
+                advertisement: renter.advertisement,
+            }).forEach(([fieldName, value]) => {
+                const input = form.elements.namedItem(fieldName)
+                if (input && !input.value.trim()) input.value = value || ''
+            })
+        } catch (error) {
+            console.error('Failed to find registered renter', error)
+        }
+    }
+
     const addRental = async (e) => {
         e.preventDefault()
         const data = new FormData(e.target)
@@ -74,6 +100,9 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
             description: (info.description || '').trim(),
             name: (info.renterName || '').trim(),
             phone: (info.renterPhone || '').trim(),
+            email: (info.email || '').trim(),
+            city: (info.city || '').trim(),
+            advertisement: (info.advertisement || '').trim(),
         }
         setIsSubmitting(true)
         setSubmitError('')
@@ -96,7 +125,7 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
             }}
         >
             <div className="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="add-rental-title" dir="rtl">
-                <form className="add-rental-form" onSubmit={addRental}>
+                <form ref={formRef} className="add-rental-form" onSubmit={addRental}>
                     <div className="add-rental-header">
                         <div>
                             <span className="add-rental-eyebrow">ניהול השכרות</span>
@@ -206,11 +235,23 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
                         <div className="rental-form-fields">
                             <label className="rental-form-field">
                                 <span>שם השוכר</span>
-                                <input name="renterName" type="text" required placeholder="שם מלא" />
+                                <input name="renterName" type="text" required placeholder="שם מלא" onBlur={fillRegisteredRenter} />
                             </label>
                             <label className="rental-form-field">
                                 <span>טלפון</span>
-                                <input name="renterPhone" type="tel" required placeholder="מספר טלפון" />
+                                <input name="renterPhone" type="tel" required placeholder="מספר טלפון" onBlur={fillRegisteredRenter} />
+                            </label>
+                            <label className="rental-form-field">
+                                <span>עיר</span>
+                                <input name="city" type="text" placeholder="עיר מגורים" />
+                            </label>
+                            <label className="rental-form-field">
+                                <span>מייל</span>
+                                <input name="email" type="email" placeholder="name@example.com" />
+                            </label>
+                            <label className="rental-form-field rental-form-field-wide">
+                                <span>מי שלח אותו?</span>
+                                <input name="advertisement" type="text" placeholder="שם המפנה או מקור ההגעה" />
                             </label>
                         </div>
                     </section>
