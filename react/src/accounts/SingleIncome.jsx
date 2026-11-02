@@ -8,7 +8,9 @@ const formatDate = (value) => {
 
 const SingleIncome = ({ income }) => {
     const renterName = typeof income.renter === 'object' ? income.renter?.name : ''
-    const description = renterName || (income.renter ? 'תשלום משוכר' : 'תשלום שהתקבל')
+    const description = renterName
+        ? `${renterName}${income.incomeType === 'advance' ? ' - מקדמה' : ''}`
+        : income.renter ? 'תשלום משוכר' : 'תשלום שהתקבל'
 
     return (
         <article className="income-item">

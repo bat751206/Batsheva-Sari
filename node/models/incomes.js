@@ -16,6 +16,14 @@ const incomesSchema = new mongoose.Schema({
     renter:{
         type:mongoose.ObjectId,
         ref:'Renter'
+    },
+    rental: {
+        type: mongoose.ObjectId,
+        ref: 'Rent'
+    },
+    incomeType: {
+        type: String,
+        enum: ['advance', 'payment']
     }
 
 }, {

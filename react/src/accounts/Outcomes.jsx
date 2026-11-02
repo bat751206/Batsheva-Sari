@@ -43,6 +43,19 @@ const Outcomes = () => {
         getData()
     }, [])
 
+    useEffect(() => {
+        if (!addNew && !addShopping) return undefined
+
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') {
+                setAddNew(false)
+                setAddShopping(false)
+            }
+        }
+        document.addEventListener('keydown', closeOnEscape)
+        return () => document.removeEventListener('keydown', closeOnEscape)
+    }, [addNew, addShopping])
+
     const filteredOutcomes = useMemo(() => {
         const query = search.trim().toLocaleLowerCase('he')
         return info.filter((outcome) =>
@@ -125,10 +138,25 @@ const Outcomes = () => {
             </section>
 
             {(addNew || addShopping) && (
-                <section className="expense-form-panel">
-                    {addNew && <AddOutcome setAddNew={setAddNew} onSaved={getData} />}
-                    {addShopping && <Shopping setAddShopping={setAddShopping} onSaved={getData} />}
-                </section>
+                <div
+                    className="expense-modal-backdrop"
+                    onMouseDown={(event) => {
+                        if (event.target === event.currentTarget) {
+                            setAddNew(false)
+                            setAddShopping(false)
+                        }
+                    }}
+                >
+                    <section
+                        className="expense-form-panel expense-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={addNew ? 'הוצאה אחרת' : 'קנייה ועדכון מלאי'}
+                    >
+                        {addNew && <AddOutcome setAddNew={setAddNew} onSaved={getData} />}
+                        {addShopping && <Shopping setAddShopping={setAddShopping} onSaved={getData} />}
+                    </section>
+                </div>
             )}
 
             <section className="expenses-list-panel">

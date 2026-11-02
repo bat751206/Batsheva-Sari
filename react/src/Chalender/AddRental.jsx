@@ -16,6 +16,11 @@ const formatDateLabel = (date) => new Intl.DateTimeFormat('he-IL', {
     year: 'numeric',
 }).format(date)
 
+const calculateAdvance = (amount) => {
+    const sum = Number(amount)
+    return Number.isFinite(sum) && sum > 0 ? (sum * 0.1).toFixed(2) : '0.00'
+}
+
 const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
     const rentalDateValue = String(rental?.date || '').slice(0, 10)
     const [rentalYear, rentalMonth, rentalDay] = rentalDateValue.split('-').map(Number)
@@ -29,6 +34,12 @@ const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState('')
+    const [advance, setAdvance] = useState(() => (
+        rental?.advance != null ? String(rental.advance) : calculateAdvance(rental?.sumPayment)
+    ))
+    const [isAdvanceCustomized, setIsAdvanceCustomized] = useState(() => (
+        rental?.advance != null && Math.abs(Number(rental.advance) - Number(rental.sumPayment || 0) * 0.1) >= 0.005
+    ))
     const datePickerRef = useRef(null)
     const formRef = useRef(null)
 
@@ -101,6 +112,8 @@ const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
             checkPikadon: info.checkPikadon === 'on',
             tivuch: info.tivuch === 'on',
             sumPayment: Number(info.sum),
+            advance: Number(info.advance),
+            advancePaymentType: info.advancePaymentType || undefined,
             description: (info.description || '').trim(),
             name: (info.renterName || '').trim(),
             phone: (info.renterPhone || '').trim(),
@@ -114,7 +127,17 @@ const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
             if (rental?._id) {
                 await axios.put('http://localhost:7200/api/rents', { id: rental._id, ...obj })
             } else {
-                await axios.post('http://localhost:7200/api/rents', obj)
+                const { data: createdRental } = await axios.post('http://localhost:7200/api/rents', obj)
+                if (obj.advance > 0) {
+                    await axios.post('http://localhost:7200/api/incomes', {
+                        date: new Date(),
+                        sum: obj.advance,
+                        paymentType: obj.advancePaymentType,
+                        renter: createdRental.renter,
+                        rental: createdRental._id,
+                        incomeType: 'advance',
+                    })
+                }
             }
             onClose()
             onRentalAdded()
@@ -269,7 +292,33 @@ const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
                         <div className="rental-form-fields">
                             <label className="rental-form-field">
                                 <span>סכום לתשלום</span>
-                                <input name="sum" type="number" min="0" required placeholder="₪" defaultValue={rental?.sumPayment ?? ''} />
+                                <input
+                                    name="sum"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                    placeholder="₪"
+                                    defaultValue={rental?.sumPayment ?? ''}
+                                    onChange={(event) => {
+                                        if (!isAdvanceCustomized) setAdvance(calculateAdvance(event.target.value))
+                                    }}
+                                />
+                            </label>
+                            <label className="rental-form-field">
+                                <span>סכום מקדמה</span>
+                                <input
+                                    name="advance"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                    value={advance}
+                                    onChange={(event) => {
+                                        setAdvance(event.target.value)
+                                        setIsAdvanceCustomized(true)
+                                    }}
+                                />
                             </label>
                             <label className="rental-form-field rental-form-field-wide">
                                 <span>הערות</span>
@@ -284,6 +333,15 @@ const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
                             <label className="rental-option" htmlFor="tivuch">
                                 <input id="tivuch" name="tivuch" type="checkbox" defaultChecked={Boolean(rental?.tivuch)} />
                                 <span>תיווך</span>
+                            </label>
+                            <label className="rental-option rental-advance-payment-option">
+                                <span>צורת תשלום מקדמה</span>
+                                <select name="advancePaymentType" defaultValue={rental?.advancePaymentType || ''} required>
+                                    <option value="">בחירה</option>
+                                    <option value="מזומן">מזומן</option>
+                                    <option value="העברה">העברה</option>
+                                    <option value="צ'ק">צ׳ק</option>
+                                </select>
                             </label>
                         </div>
                     </section>

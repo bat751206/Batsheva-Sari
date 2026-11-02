@@ -15,12 +15,6 @@ const UpdatePayment = ({ rent, onClose, onPaymentUpdated }) => {
         try {
             await axios.put('http://127.0.0.1:7200/api/rents/payment', { id: rent._id, paymentType })
 
-            await axios.post('http://127.0.0.1:7200/api/incomes', {
-                date: new Date(),
-                renter: rent.renter?._id ?? rent.renter,
-                sum: rent.sumPayment,
-                paymentType,
-            })
             onPaymentUpdated?.()
         } catch (error) {
             console.error('Error updating payment type:', error)
@@ -34,7 +28,7 @@ const UpdatePayment = ({ rent, onClose, onPaymentUpdated }) => {
         <form className="update-payment-form" onSubmit={confirmPayment}>
             <div className="update-payment-summary">
                 <span>סכום לתשלום</span>
-                <strong>{Number(rent.sumPayment || 0).toLocaleString('he-IL')} ₪</strong>
+                <strong>{(Number(rent.sumPayment || 0)-Number(rent.advance || 0)).toLocaleString('he-IL')} ₪</strong>
             </div>
             <label className="update-payment-field" htmlFor="paymentType">
                 <span>אמצעי תשלום</span>

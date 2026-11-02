@@ -549,6 +549,21 @@
   accent-color: #3c795c;
 }
 
+.rental-advance-payment-option {
+  gap: 0.4rem;
+}
+
+.rental-advance-payment-option select {
+  min-height: 2rem;
+  max-width: 9rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid #cfdad2;
+  border-radius: 4px;
+  background: #fff;
+  color: #40564a;
+  font: inherit;
+}
+
 .rental-form-error {
   margin: 0;
   padding: 0.65rem 0.75rem;

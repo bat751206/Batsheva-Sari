@@ -1,12 +1,13 @@
 const Rents = require("../models/rents")
 const Renters = require("../models/renters")
+const Incomes = require("../models/incomes")
 const { createNewRenter } = require("./rentersController")
 const {addrentalToRenter} = require("./rentersController")
 
 
 
 const createNewRent = async (req, res) => {
-    const {date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,description}= req.body
+    const {date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,advance,advancePaymentType,description}= req.body
     const { name, phone, email, city, advertisement}= req.body
     if (!date || !numOfBeds||!numOfNights||!sumPayment||!name||!phone ) {
         return res.send("date and numOfBeds and numOfNights and sumPayment is required")
@@ -24,7 +25,8 @@ const createNewRent = async (req, res) => {
         
     const renter=await createNewRenter( name, phone, email, city, advertisement)
 
-    const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, checkPikadon, tivuch, sumPayment, description })
+    const advanceAmount = Number.isFinite(Number(advance)) ? Number(advance) : Number(sumPayment) * 0.1
+    const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, checkPikadon, tivuch, sumPayment, advance: advanceAmount, advancePaymentType: advancePaymentType || undefined, description })
     await addrentalToRenter(renter._id,rent)
     res.json(rent)
 
@@ -51,7 +53,7 @@ const getRentById = async (req,res) =>{
 }
 
 const updateRent = async (req,res) =>{
-    const {id,date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,description,name,phone,email,city,advertisement} =req.body
+    const {id,date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,advance,advancePaymentType,description,name,phone,email,city,advertisement} =req.body
     if(!id){
         return res.status(400).json({ message: "id is required" })
     }
@@ -92,6 +94,8 @@ const updateRent = async (req,res) =>{
     rent.checkPikadon=checkPikadon === true
     rent.tivuch=tivuch === true
     rent.sumPayment=Number(sumPayment)
+    rent.advance=Number.isFinite(Number(advance)) ? Number(advance) : Number(sumPayment) * 0.1
+    rent.advancePaymentType=advancePaymentType || undefined
     rent.description=String(description || '').trim()
     await rent.save()
     res.json(rent)
@@ -101,9 +105,41 @@ const paymentUpdateRent = async (req,res) =>{
     if(!id){
         return res.send("id is required")
     }
-    let rent= await Rents.findById(id)
+    const rent= await Rents.findById(id)
+    if (!rent) return res.status(404).json({ message: "השכרה לא נמצאה" })
+    if (!paymentType) return res.status(400).json({ message: "יש לבחור אמצעי תשלום" })
+
+    const fullIncomeAmount = Number(rent.sumPayment) * (rent.tivuch ? 0.85 : 1)
+    await Incomes.findOneAndUpdate(
+        { rental: rent._id, incomeType: 'payment' },
+        {
+            $set: {
+                date: new Date(),
+                sum: fullIncomeAmount,
+                paymentType,
+                renter: rent.renter,
+            },
+            $setOnInsert: {
+                rental: rent._id,
+                incomeType: 'payment',
+            },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+    )
+    await Incomes.deleteMany({ rental: rent._id, incomeType: 'advance' })
     rent.isPaid=true
     rent.paymentType=paymentType
+    await rent.save()
+    res.json(rent) 
+}
+const advanceUpdateRent = async (req,res) =>{
+    const {id,advancePaymentType} =req.body
+    if(!id){
+        return res.send("id is required")
+    }
+    let rent= await Rents.findById(id)
+    rent.paidAdvance=true
+    rent.advancePaymentType=advancePaymentType
     await rent.save()
     res.json(rent) 
 }
@@ -141,5 +177,5 @@ const isDateAvailable = async (date, numOfNights, excludeRentId = null) => {
 }
 
 
-module.exports = { createNewRent ,getAllRents, getNearestRent, getRentById,updateRent,deleteRent,paymentUpdateRent}
+module.exports = { createNewRent ,getAllRents, getNearestRent, getRentById,updateRent,deleteRent,paymentUpdateRent,advanceUpdateRent}
 

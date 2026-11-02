@@ -122,6 +122,7 @@ const Todos = () => {
             {add && (
                 <AddTodos
                     todos={info}
+                    onClose={() => setAdd(false)}
                     onTodoCreated={(todo) => setInfo((current) => [...current, todo])}
                     onTodoActivated={(todo) => setInfo((current) => current.map((item) => (
                         item._id === todo._id ? todo : item

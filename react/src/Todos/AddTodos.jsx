@@ -1,12 +1,25 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-const AddTodos = ({ todos, onTodoCreated, onTodoActivated }) => {
+const AddTodos = ({ todos, onTodoCreated, onTodoActivated, onClose }) => {
     const [isCreating, setIsCreating] = useState(false)
     const [title, setTitle] = useState('')
     const [isTemporary, setIsTemporary] = useState(false)
     const [error, setError] = useState('')
     const [isSaving, setIsSaving] = useState(false)
+
+    useEffect(() => {
+        const closeOnEscape = (event) => {
+            if (event.key !== 'Escape' || isSaving) return
+            if (isCreating) {
+                setIsCreating(false)
+            } else {
+                onClose()
+            }
+        }
+        document.addEventListener('keydown', closeOnEscape)
+        return () => document.removeEventListener('keydown', closeOnEscape)
+    }, [isCreating, isSaving, onClose])
 
     const changeShow = async (todo) => {
         try {
@@ -45,10 +58,18 @@ const AddTodos = ({ todos, onTodoCreated, onTodoActivated }) => {
         }
     }
 
-    const availableTodos = todos.filter((todo) => todo.isTemporary && !todo.show)
+    const availableTodos = todos
+        .filter((todo) => todo.isTemporary && !todo.show)
+        .sort((first, second) => String(first.title || '').localeCompare(String(second.title || ''), 'he', { sensitivity: 'base' }))
 
     return (
-        <section className="todos-section todos-library" aria-labelledby="available-todos-title">
+        <div
+            className="todos-add-backdrop"
+            onMouseDown={(event) => {
+                if (event.target === event.currentTarget && !isCreating) onClose()
+            }}
+        >
+        <section className="todos-section todos-library todos-add-dialog" role="dialog" aria-modal="true" aria-labelledby="available-todos-title">
             <div className="todos-section-heading">
                 <div>
                     <h2 id="available-todos-title">משימות שאפשר להוסיף</h2>
@@ -69,49 +90,76 @@ const AddTodos = ({ todos, onTodoCreated, onTodoActivated }) => {
                         <span aria-hidden="true">{isCreating ? '−' : '+'}</span>
                         {isCreating ? 'ביטול' : 'משימה חדשה'}
                     </button>
+                    <button
+                        className="todos-add-dialog-close"
+                        type="button"
+                        onClick={onClose}
+                        aria-label="סגירת רשימת המשימות"
+                    >
+                        ×
+                    </button>
                 </div>
             </div>
 
             {isCreating && (
-                <form id="todo-create-form" className="todo-create-form" onSubmit={createTodo}>
-                    <label className="todo-create-label" htmlFor="todo-title-input">שם המשימה</label>
-                    <input
-                        id="todo-title-input"
-                        className="todo-create-input"
-                        type="text"
-                        value={title}
-                        onChange={(event) => setTitle(event.target.value)}
-                        maxLength={120}
-                        autoFocus
-                    />
-
-                    <fieldset className="todo-type-options">
-                        <legend>סוג המשימה</legend>
-                        <label>
+                <div
+                    className="todo-create-backdrop"
+                    onMouseDown={(event) => {
+                        if (event.target === event.currentTarget && !isSaving) setIsCreating(false)
+                    }}
+                >
+                    <section className="todo-create-dialog" role="dialog" aria-modal="true" aria-labelledby="todo-create-title" dir="rtl">
+                        <header className="todo-create-dialog-header">
+                            <h2 id="todo-create-title">משימה חדשה</h2>
+                            <button
+                                className="todo-create-dialog-close"
+                                type="button"
+                                onClick={() => setIsCreating(false)}
+                                disabled={isSaving}
+                                aria-label="סגירת חלונית הוספת משימה"
+                            >×</button>
+                        </header>
+                        <form id="todo-create-form" className="todo-create-form" onSubmit={createTodo}>
+                            <label className="todo-create-label" htmlFor="todo-title-input">שם המשימה</label>
                             <input
-                                type="radio"
-                                name="todo-type"
-                                checked={isTemporary}
-                                onChange={() => setIsTemporary(true)}
+                                id="todo-title-input"
+                                className="todo-create-input"
+                                type="text"
+                                value={title}
+                                onChange={(event) => setTitle(event.target.value)}
+                                maxLength={120}
+                                autoFocus
                             />
-                            זמנית
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="todo-type"
-                                checked={!isTemporary}
-                                onChange={() => setIsTemporary(false)}
-                            />
-                            קבועה
-                        </label>
-                    </fieldset>
 
-                    {error && <p className="todo-create-error" role="alert">{error}</p>}
-                    <button className="todo-create-submit" type="submit" disabled={isSaving}>
-                        {isSaving ? 'שומרת...' : 'שמירת משימה'}
-                    </button>
-                </form>
+                            <fieldset className="todo-type-options">
+                                <legend>סוג המשימה</legend>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="todo-type"
+                                        checked={isTemporary}
+                                        onChange={() => setIsTemporary(true)}
+                                    />
+                                    זמנית
+                                </label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="todo-type"
+                                        checked={!isTemporary}
+                                        onChange={() => setIsTemporary(false)}
+                                    />
+                                    קבועה
+                                </label>
+                            </fieldset>
+
+                            {error && <p className="todo-create-error" role="alert">{error}</p>}
+                            <button className="todo-create-submit" type="submit" disabled={isSaving}>
+                                {isSaving ? 'שומרת...' : 'שמירת משימה'}
+                            </button>
+                        </form>
+                    </section>
+                </div>
             )}
 
             {availableTodos.length > 0 ? (
@@ -138,6 +186,7 @@ const AddTodos = ({ todos, onTodoCreated, onTodoActivated }) => {
                 </div>
             )}
         </section>
+        </div>
     )
 }
 

@@ -9,5 +9,6 @@ router.get("/:id",rentController.getRentById)
 router.put("/",rentController.updateRent)
 router.delete("/:id",rentController.deleteRent)
 router.put("/payment",rentController.paymentUpdateRent)
+router.put("/advance",rentController.advanceUpdateRent)
 
 module.exports = router

@@ -42,7 +42,7 @@ const Incomes = () => {
     const filteredIncomes = useMemo(() => {
         const query = search.trim().toLocaleLowerCase('he')
         return info.filter((income) =>
-            [income.date, income.paymentType, income.renter]
+            [income.date, income.paymentType, income.renter?.name]
                 .some((value) => String(value || '').toLocaleLowerCase('he').includes(query))
         ).sort((leftIncome, rightIncome) => {
             const leftDate = new Date(leftIncome.date).getTime()

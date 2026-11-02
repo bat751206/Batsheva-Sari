@@ -26,6 +26,43 @@
   gap: 0.65rem;
 }
 
+.monthly-balance-mode {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid #dfe9e5;
+  border-radius: 0.7rem;
+  background: #edf3f0;
+}
+
+.monthly-balance-mode button {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #536d67;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.monthly-balance-mode button[aria-pressed='true'] {
+  background: #38665c;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(25, 59, 57, 0.14);
+}
+
+.monthly-balance-mode button:focus-visible {
+  outline: 3px solid rgba(39, 130, 99, 0.25);
+  outline-offset: 1px;
+}
+
+.monthly-balance-picker-wrap {
+  position: relative;
+}
+
 .monthly-balance-period,
 .monthly-balance-refresh {
   display: inline-flex;
@@ -43,6 +80,82 @@
 .monthly-balance-period {
   color: #38665c;
   background: #eaf4ef;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.monthly-balance-period:hover {
+  background: #deeee6;
+  border-color: #c8ded3;
+}
+
+.monthly-balance-period:focus-visible {
+  outline: 3px solid rgba(39, 130, 99, 0.25);
+  outline-offset: 2px;
+}
+
+.monthly-balance-picker {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  inset-inline-end: 0;
+  z-index: 20;
+  display: grid;
+  gap: 0.45rem;
+  min-width: 13rem;
+  padding: 0.8rem;
+  border: 1px solid var(--balance-border);
+  border-radius: 0.7rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(25, 59, 57, 0.14);
+}
+
+.monthly-balance-picker form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.monthly-balance-picker label {
+  color: #536d67;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.monthly-balance-picker input,
+.monthly-balance-picker select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #d5e2dd;
+  border-radius: 0.5rem;
+  background: #fbfdfc;
+  color: #193b39;
+  font: inherit;
+}
+
+.monthly-balance-picker button {
+  min-height: 2.4rem;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.7rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #38665c;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.monthly-balance-picker button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.monthly-balance-picker input:focus-visible,
+.monthly-balance-picker select:focus-visible,
+.monthly-balance-picker button:focus-visible {
+  outline: 3px solid rgba(39, 130, 99, 0.2);
+  outline-offset: 1px;
 }
 
 .monthly-balance-refresh {

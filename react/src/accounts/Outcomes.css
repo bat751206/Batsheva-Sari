@@ -70,6 +70,23 @@
   border-color: #e4e0fa;
 }
 
+.expense-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.expense-modal {
+  width: min(100%, 48rem);
+  max-height: min(90vh, 46rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
 .expense-form-heading,
 .expense-form-heading > div {
   display: flex;
@@ -331,6 +348,16 @@
 }
 
 @media (max-width: 640px) {
+  .expense-modal-backdrop {
+    align-items: start;
+    padding: 0.75rem;
+  }
+
+  .expense-modal {
+    max-height: calc(100dvh - 1.5rem);
+    padding: 1rem;
+  }
+
   .expenses-actions-panel {
     align-items: stretch;
     flex-direction: column;

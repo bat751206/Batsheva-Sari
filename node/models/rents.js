@@ -5,45 +5,62 @@ const rentsSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    numOfBeds:{
-        type:Number,
-        required:true
+    numOfBeds: {
+        type: Number,
+        required: true
     },
-    numOfBabyBeds:{
-        type:Number,
-        default:0
+    numOfBabyBeds: {
+        type: Number,
+        default: 0
     },
-    numOfNights:{
-        type:Number,
-        required:true
+    numOfNights: {
+        type: Number,
+        required: true
     },
     todoListActivated: {
         type: Boolean,
         default: false
     },
-    renter:{
-        type:mongoose.ObjectId,
-        ref:'Renter'
+    renter: {
+        type: mongoose.ObjectId,
+        ref: 'Renter'
     },
-    checkPikadon:{
-        type:Boolean,
-        default:false
-    },
-    tivuch:{
+    checkPikadon: {
         type: Boolean,
-        default:false
+        default: false
     },
-    sumPayment:{
-        type:Number,
+    tivuch: {
+        type: Boolean,
+        default: false
+    },
+    sumPayment: {
+        type: Number,
+        required: true
+    },
+    isPaid: {
+        type: Boolean,
+        default: false
+    },
+    advance: {
+        type: Number,
+        default: function () {
+            return Number(this.sumPayment || 0) * 0.1
+        },
+        required: true
+    },
+    paidAdvance: {
+        type: Boolean,
+        default: false
+    },
+
+    paymentType: {
+        type: String,
+        enum: ['מזומן', 'העברה', "צ'ק"]
+    },
+    advancePaymentType: {
+        type: String,
+        enum: ['מזומן', 'העברה', "צ'ק"],
         required:true
-    },
-    isPaid:{
-        type:Boolean,
-        default:false
-    },
-    paymentType:{
-        type:String,
-        enum:['מזומן','העברה',"צ'ק"]
     },
     description: {
         type: String,

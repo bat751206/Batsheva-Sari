@@ -1,7 +1,7 @@
 const Incomes = require("../models/incomes")
 
 const createNewIncome = async (req, res) => {
-    const { date, sum, paymentType, renter } = req.body
+    const { date, sum, paymentType, renter, rental, incomeType } = req.body
     if (!date || !sum) {
         return res.send("date and sum is required")
     }
@@ -10,12 +10,12 @@ const createNewIncome = async (req, res) => {
     {
         return res.send("תאריך לא תקין נסה שוב")
     }
-        const income = await Incomes.create({ date, sum, paymentType, renter })
+        const income = await Incomes.create({ date, sum, paymentType, renter, rental, incomeType })
     res.json(income)
 }
 
 const getAllIncomes = async (req, res) => {
-    const incomes = await Incomes.find()
+    const incomes = await Incomes.find().populate("renter", "name")
     res.json(incomes)
 }
 

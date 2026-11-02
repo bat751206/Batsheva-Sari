@@ -96,7 +96,6 @@ const ShowRenterHistory = () => {
                 </button>
               </div>
               <label className="rental-history-search-field" htmlFor="renter-history-search-input">
-                <span>{searchMode === 'name' ? 'חיפוש לפי שם שוכר' : 'חיפוש לפי טלפון'}</span>
                 <input
                   id="renter-history-search-input"
                   type={searchMode === 'phone' ? 'tel' : 'search'}
