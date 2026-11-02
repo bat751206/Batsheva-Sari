@@ -45,7 +45,7 @@ const AddTodos = ({ todos, onTodoCreated, onTodoActivated }) => {
         }
     }
 
-    const availableTodos = todos.filter((todo) => !todo.show)
+    const availableTodos = todos.filter((todo) => todo.isTemporary && !todo.show)
 
     return (
         <section className="todos-section todos-library" aria-labelledby="available-todos-title">

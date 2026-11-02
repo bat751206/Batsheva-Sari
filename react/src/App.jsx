@@ -9,6 +9,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ShowStock from './stock/ShowStock'
 import Todos from './Todos/Todos'
 import HomePage from './Components/HomePage'
+import ShowHistory from './History/ShowHistory'
+import ShowRentalHistory from './History/ShowRentalHistory'
+import ShowRenterHistory from './History/ShowRenterHistory'
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
             <Route path='/rents' element={<RentCalendar />} />
             <Route path='/amount' element={<ShowStock />} />
             <Route path='/todos' element={<Todos />} />
+            <Route path='/history' element={<ShowHistory />} />
+            <Route path='/history/rental' element={<ShowRentalHistory />} />
+            <Route path='/history/renters' element={<ShowRenterHistory />} />
           </Route>
         </Routes>
       </Router>

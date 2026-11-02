@@ -16,8 +16,12 @@ const formatDateLabel = (date) => new Intl.DateTimeFormat('he-IL', {
     year: 'numeric',
 }).format(date)
 
-const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
-    const initialDate = selectedDate || new Date()
+const AddRental = ({ rental, onClose, selectedDate, onRentalAdded }) => {
+    const rentalDateValue = String(rental?.date || '').slice(0, 10)
+    const [rentalYear, rentalMonth, rentalDay] = rentalDateValue.split('-').map(Number)
+    const initialDate = /^\d{4}-\d{2}-\d{2}$/.test(rentalDateValue)
+        ? new Date(rentalYear, rentalMonth - 1, rentalDay)
+        : selectedDate || new Date()
     const [date, setDate] = useState(initialDate)
     const [visibleMonth, setVisibleMonth] = useState(() => (
         new Date(initialDate.getFullYear(), initialDate.getMonth(), 1)
@@ -94,8 +98,8 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
             numOfBeds: Number(info.numOfBeds),
             numOfBabyBeds: Number(info.numOfBabyBeds),
             numOfNights: Number(info.numOfNights),
-            checkPikadon: info.checkPikadon,
-            tivuch: info.tivuch,
+            checkPikadon: info.checkPikadon === 'on',
+            tivuch: info.tivuch === 'on',
             sumPayment: Number(info.sum),
             description: (info.description || '').trim(),
             name: (info.renterName || '').trim(),
@@ -107,8 +111,12 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
         setIsSubmitting(true)
         setSubmitError('')
         try {
-            await axios.post('http://localhost:7200/api/rents', obj)
-            setShowAddRental(false)
+            if (rental?._id) {
+                await axios.put('http://localhost:7200/api/rents', { id: rental._id, ...obj })
+            } else {
+                await axios.post('http://localhost:7200/api/rents', obj)
+            }
+            onClose()
             onRentalAdded()
         } catch (error) {
             console.error('Failed to add rental', error)
@@ -121,7 +129,7 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
         <div
             className="calendar-modal-backdrop"
             onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setShowAddRental(false)
+                if (event.target === event.currentTarget) onClose()
             }}
         >
             <div className="calendar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="add-rental-title" dir="rtl">
@@ -129,12 +137,12 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
                     <div className="add-rental-header">
                         <div>
                             <span className="add-rental-eyebrow">ניהול השכרות</span>
-                            <h2 id="add-rental-title">הוספת השכרה</h2>
+                            <h2 id="add-rental-title">{rental ? 'עריכת השכרה' : 'הוספת השכרה'}</h2>
                         </div>
                         <button
                             type="button"
                             className="add-rental-close"
-                            onClick={() => setShowAddRental(false)}
+                            onClick={onClose}
                             aria-label="סגירת טופס ההשכרה"
                         >×</button>
                     </div>
@@ -217,15 +225,15 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
                         <div className="rental-form-fields rental-form-fields-stay">
                             <label className="rental-form-field">
                                 <span>מספר מיטות</span>
-                                <input name="numOfBeds" type="number" min="1" required placeholder="למשל 4" />
+                                <input name="numOfBeds" type="number" min="1" required placeholder="למשל 4" defaultValue={rental?.numOfBeds ?? ''} />
                             </label>
                             <label className="rental-form-field">
                                 <span>מיטות תינוק</span>
-                                <input name="numOfBabyBeds" type="number" min="0" defaultValue="0" />
+                                <input name="numOfBabyBeds" type="number" min="0" defaultValue={rental?.numOfBabyBeds ?? 0} />
                             </label>
                             <label className="rental-form-field">
                                 <span>מספר לילות</span>
-                                <input name="numOfNights" type="number" min="1" required placeholder="למשל 2" />
+                                <input name="numOfNights" type="number" min="1" required placeholder="למשל 2" defaultValue={rental?.numOfNights ?? ''} />
                             </label>
                         </div>
                     </section>
@@ -235,23 +243,23 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
                         <div className="rental-form-fields">
                             <label className="rental-form-field">
                                 <span>שם השוכר</span>
-                                <input name="renterName" type="text" required placeholder="שם מלא" onBlur={fillRegisteredRenter} />
+                                <input name="renterName" type="text" required placeholder="שם מלא" defaultValue={rental?.renter?.name ?? ''} onBlur={fillRegisteredRenter} />
                             </label>
                             <label className="rental-form-field">
                                 <span>טלפון</span>
-                                <input name="renterPhone" type="tel" required placeholder="מספר טלפון" onBlur={fillRegisteredRenter} />
+                                <input name="renterPhone" type="tel" required placeholder="מספר טלפון" defaultValue={rental?.renter?.phone ?? ''} onBlur={fillRegisteredRenter} />
                             </label>
                             <label className="rental-form-field">
                                 <span>עיר</span>
-                                <input name="city" type="text" placeholder="עיר מגורים" />
+                                <input name="city" type="text" placeholder="עיר מגורים" defaultValue={rental?.renter?.city ?? ''} />
                             </label>
                             <label className="rental-form-field">
                                 <span>מייל</span>
-                                <input name="email" type="email" placeholder="name@example.com" />
+                                <input name="email" type="email" placeholder="name@example.com" defaultValue={rental?.renter?.email ?? ''} />
                             </label>
                             <label className="rental-form-field rental-form-field-wide">
                                 <span>מי שלח אותו?</span>
-                                <input name="advertisement" type="text" placeholder="שם המפנה או מקור ההגעה" />
+                                <input name="advertisement" type="text" placeholder="שם המפנה או מקור ההגעה" defaultValue={rental?.renter?.advertisement ?? ''} />
                             </label>
                         </div>
                     </section>
@@ -261,20 +269,20 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
                         <div className="rental-form-fields">
                             <label className="rental-form-field">
                                 <span>סכום לתשלום</span>
-                                <input name="sum" type="number" min="0" required placeholder="₪" />
+                                <input name="sum" type="number" min="0" required placeholder="₪" defaultValue={rental?.sumPayment ?? ''} />
                             </label>
                             <label className="rental-form-field rental-form-field-wide">
                                 <span>הערות</span>
-                                <input name="description" type="text" placeholder="פרטים נוספים (לא חובה)" />
+                                <input name="description" type="text" placeholder="פרטים נוספים (לא חובה)" defaultValue={rental?.description ?? ''} />
                             </label>
                         </div>
                         <div className="rental-form-options">
                             <label className="rental-option" htmlFor="checkPikadon">
-                                <input id="checkPikadon" name="checkPikadon" type="checkbox" />
+                                <input id="checkPikadon" name="checkPikadon" type="checkbox" defaultChecked={Boolean(rental?.checkPikadon)} />
                                 <span>צ׳ק פיקדון</span>
                             </label>
                             <label className="rental-option" htmlFor="tivuch">
-                                <input id="tivuch" name="tivuch" type="checkbox" />
+                                <input id="tivuch" name="tivuch" type="checkbox" defaultChecked={Boolean(rental?.tivuch)} />
                                 <span>תיווך</span>
                             </label>
                         </div>
@@ -282,11 +290,11 @@ const AddRental = ({ setShowAddRental, selectedDate ,onRentalAdded}) => {
 
                     {submitError && <p className="rental-form-error" role="alert">{submitError}</p>}
                     <div className="rental-form-actions">
-                        <button type="button" className="rental-form-cancel" onClick={() => setShowAddRental(false)}>
+                        <button type="button" className="rental-form-cancel" onClick={onClose}>
                             ביטול
                         </button>
                         <button type="submit" className="rental-form-submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'שומר...' : 'שמירת השכרה'}
+                            {isSubmitting ? 'שומר...' : rental ? 'שמירת שינויים' : 'שמירת השכרה'}
                         </button>
                     </div>
                 </form>

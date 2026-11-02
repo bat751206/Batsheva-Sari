@@ -1,11 +1,12 @@
 const Rents = require("../models/rents")
+const Renters = require("../models/renters")
 const { createNewRenter } = require("./rentersController")
 const {addrentalToRenter} = require("./rentersController")
 
 
 
 const createNewRent = async (req, res) => {
-    const {date,numOfBeds,numOfBabyBeds,numOfNights,chekPikadon,tivuch,sumPayment,description}= req.body
+    const {date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,description}= req.body
     const { name, phone, email, city, advertisement}= req.body
     if (!date || !numOfBeds||!numOfNights||!sumPayment||!name||!phone ) {
         return res.send("date and numOfBeds and numOfNights and sumPayment is required")
@@ -23,14 +24,14 @@ const createNewRent = async (req, res) => {
         
     const renter=await createNewRenter( name, phone, email, city, advertisement)
 
-    const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, chekPikadon, tivuch, sumPayment, description })
+    const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, checkPikadon, tivuch, sumPayment, description })
     await addrentalToRenter(renter._id,rent)
     res.json(rent)
 
 }
 
 const getAllRents = async (req,res)=>{
-    const rents= await Rents.find().populate("renter", "name")
+    const rents= await Rents.find().populate("renter", "name phone email city advertisement")
     res.json(rents)
 }
 
@@ -50,25 +51,50 @@ const getRentById = async (req,res) =>{
 }
 
 const updateRent = async (req,res) =>{
-    const {id,date,numOfBeds,numOfBabyBeds,numOfNights,renter,chekPikadon,tivuch,sumPayment} =req.body
+    const {id,date,numOfBeds,numOfBabyBeds,numOfNights,checkPikadon,tivuch,sumPayment,description,name,phone,email,city,advertisement} =req.body
     if(!id){
-        return res.send("id is required")
+        return res.status(400).json({ message: "id is required" })
     }
-    let rent= await Rents.findById(id)
+    const rent= await Rents.findById(id)
+    if (!rent) return res.status(404).json({ message: "השכרה לא נמצאה" })
+    if (!date || !Number.isInteger(Number(numOfBeds)) || Number(numOfBeds) < 1 || !Number.isInteger(Number(numOfNights)) || Number(numOfNights) < 1 || !Number.isFinite(Number(sumPayment)) || Number(sumPayment) < 0 || !String(name || '').trim() || !String(phone || '').trim()) {
+        return res.status(400).json({ message: "יש למלא את כל שדות החובה בפרטים תקינים" })
+    }
+    if (Number.isNaN(new Date(date).getTime())) {
+        return res.status(400).json({ message: "תאריך לא תקין" })
+    }
+    if (!(await isDateAvailable(date, numOfNights, id))) {
+        return res.status(409).json({ message: "התאריך הנבחר תפוס" })
+    }
+
     const previousSchedule = `${new Date(rent.date).toISOString().slice(0, 10)}:${rent.numOfNights}`
     const updatedSchedule = `${new Date(date).toISOString().slice(0, 10)}:${numOfNights}`
-   
+    const renterName = String(name).trim()
+    const renterPhone = String(phone).trim()
+    let renter = await Renters.findById(rent.renter)
+    if (!renter || renter.name !== renterName || renter.phone !== renterPhone) {
+        renter = await Renters.findOne({ name: renterName, phone: renterPhone })
+    }
+    if (!renter) renter = new Renters({ name: renterName, phone: renterPhone })
+    renter.name = renterName
+    renter.phone = renterPhone
+    renter.email = String(email || '').trim()
+    renter.city = String(city || '').trim()
+    renter.advertisement = String(advertisement || '').trim()
+    await renter.save()
+
     rent.date=date
-    rent.numOfBeds=numOfBeds
-    rent.numOfBabyBeds=numOfBabyBeds
-    rent.numOfNights=numOfNights
+    rent.numOfBeds=Number(numOfBeds)
+    rent.numOfBabyBeds=Number(numOfBabyBeds) || 0
+    rent.numOfNights=Number(numOfNights)
     if (previousSchedule !== updatedSchedule) rent.todoListActivated = false
-    rent.renter=renter
-    rent.checkPikadon=chekPikadon
-    rent.tivuch=tivuch
-    rent.sumPayment=sumPayment
+    rent.renter=renter._id
+    rent.checkPikadon=checkPikadon === true
+    rent.tivuch=tivuch === true
+    rent.sumPayment=Number(sumPayment)
+    rent.description=String(description || '').trim()
     await rent.save()
-    res.json(rent) 
+    res.json(rent)
 }
 const paymentUpdateRent = async (req,res) =>{
     const {id,paymentType} =req.body
@@ -88,7 +114,7 @@ const deleteRent= async (req,res) =>{
     await rent.deleteOne()
     res.send("erased")
 }
-const isDateAvailable = async (date, numOfNights) => {
+const isDateAvailable = async (date, numOfNights, excludeRentId = null) => {
     const startDate = new Date(date)
     const nights = Number(numOfNights)
 
@@ -99,7 +125,9 @@ const isDateAvailable = async (date, numOfNights) => {
     const endDate = new Date(startDate)
     endDate.setUTCDate(endDate.getUTCDate() + nights)
 
-    const existingRents = await Rents.find({ date: { $lt: endDate } })
+    const rentFilter = { date: { $lt: endDate } }
+    if (excludeRentId) rentFilter._id = { $ne: excludeRentId }
+    const existingRents = await Rents.find(rentFilter)
         .select("date numOfNights")
         .lean()
 

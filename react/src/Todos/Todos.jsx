@@ -6,14 +6,13 @@ import './Todos.css'
 
 const Todos = () => {
     const [info, setInfo] = useState([])
-    const [todoWindowOpen, setTodoWindowOpen] = useState(false)
     const [add, setAdd] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
     const [current, setCurrent] = useState(null)
     const getData = async () => {
         try {
             const { data } = await axios.get('http://127.0.0.1:7200/api/todos')
             setInfo(data.todos)
-            setTodoWindowOpen(data.todoWindowOpen)
             const { data: currentRent } = await axios.get('http://127.0.0.1:7200/api/rents/nearest')
             setCurrent(currentRent)
         }
@@ -26,11 +25,12 @@ const Todos = () => {
         getData()
     }, [])
      
-    const visibleTodos = todoWindowOpen
-        ? info.filter((todo) => todo.show)
-        : []
+    const visibleTodos = info.filter((todo) => !todo.isTemporary || todo.show)
     const activeTodos = visibleTodos.filter((todo) => !todo.status)
-    const availableTodos = info.filter((todo) => !todo.show)
+    const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase()
+    const filteredTodos = visibleTodos.filter((todo) => (
+        String(todo.title ?? '').toLocaleLowerCase().includes(normalizedSearchTerm)
+    ))
 
     return (
         <section className="todos-page" dir="rtl">
@@ -42,7 +42,6 @@ const Todos = () => {
                 <button
                     className="todos-add-button"
                     type="button"
-                    disabled={activeTodos.length === 0}
                     onClick={() => setAdd(!add)}
                     aria-expanded={add}
                 >
@@ -84,9 +83,21 @@ const Todos = () => {
                     <span className="todos-count">{activeTodos.length}</span>
                 </div>
 
-                {visibleTodos.length > 0 ? (
+                <div className="todos-search">
+                    <label className="todos-search-label" htmlFor="todo-search-input">חיפוש לפי שם המשימה</label>
+                    <input
+                        id="todo-search-input"
+                        className="todos-search-input"
+                        type="search"
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder="הקלידי שם משימה"
+                    />
+                </div>
+
+                {filteredTodos.length > 0 ? (
                     <ul className="todos-list">
-                        {visibleTodos.map((todo) => (
+                        {filteredTodos.map((todo) => (
                             <SingleTodo
                                 key={todo._id ?? todo.id ?? todo.title}
                                 todo={todo}
@@ -96,6 +107,10 @@ const Todos = () => {
                             />
                         ))}
                     </ul>
+                ) : visibleTodos.length > 0 ? (
+                    <div className="todos-empty">
+                        <p>לא נמצאו משימות תואמות</p>
+                    </div>
                 ) : (
                     <div className="todos-empty">
                         <span className="todos-empty-icon" aria-hidden="true">✓</span>

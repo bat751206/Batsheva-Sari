@@ -148,8 +148,8 @@ const RentCalendar = () => {
     })
     //
     const [showAddRental, setShowAddRental] = useState(false)
+    const [editingRental, setEditingRental] = useState(null)
     const [showRentalDetails, setShowRentalDetails] = useState(false)
-    const [showTasks, setShowTasks] = useState(false)
     const [paymentRental, setPaymentRental] = useState(null)
     const [contextMenu, setContextMenu] = useState(null)
     const contextMenuRef = useRef(null)
@@ -522,7 +522,6 @@ const RentCalendar = () => {
                                     setSelectedDate(date)
                                     setShowAddRental(false)
                                     setShowRentalDetails(false)
-                                    setShowTasks(false)
                                     setContextMenu(null)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
                                 }}
@@ -532,11 +531,10 @@ const RentCalendar = () => {
                                     //
                                     setShowAddRental(false)
                                     setShowRentalDetails(false)
-                                    setShowTasks(false)
                                     if (!isCurrentMonth(date)) setCurrentMonth(date)
                                     const menuWidth = 210
                                     const menuHeight = 110 + markedRentals.reduce(
-                                        (height, rental) => height + (rental.isPaid ? 44 : 88),
+                                        (height, rental) => height + 44 + (rental.isPaid ? 44 : 88),
                                         0,
                                     )
                                     setContextMenu({
@@ -580,7 +578,7 @@ const RentCalendar = () => {
                             role="menuitem"
                             onClick={() => {
                                 setSelectedDate(contextMenu.date)
-                                setShowTasks(false)
+                                setEditingRental(null)
                                 setShowAddRental(contextMenuOccupiedRentals.length === 0)
                                 setShowRentalDetails(contextMenuOccupiedRentals.length > 0)
                                 setContextMenu(null)
@@ -589,21 +587,22 @@ const RentCalendar = () => {
                             <i className={`pi ${contextMenuOccupiedRentals.length > 0 ? 'pi-eye' : 'pi-plus'}`} aria-hidden="true" />
                             {contextMenuOccupiedRentals.length > 0 ? 'הצגת השכרה' : 'הוסף השכרה'}
                         </button>
-                        <button
-                            type="button"
-                            role="menuitem"
-                            onClick={() => {
-                                setSelectedDate(contextMenu.date)
-                                setShowAddRental(false)
-                                setShowTasks(true)
-                                setContextMenu(null)
-                            }}
-                        >
-                            <i className="pi pi-list" aria-hidden="true" />
-                            הצג משימות
-                        </button>
                         {contextMenuRentals.map((rental) => (
                             <React.Fragment key={rental._id}>
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setSelectedDate(contextMenu.date)
+                                        setEditingRental(rental)
+                                        setShowAddRental(true)
+                                        setShowRentalDetails(false)
+                                        setContextMenu(null)
+                                    }}
+                                >
+                                    <i className="pi pi-pencil" aria-hidden="true" />
+                                    עריכת השכרה{rental.renter?.name ? ` - ${rental.renter.name}` : ''}
+                                </button>
                                 <button
                                     className="calendar-action-menu-delete"
                                     type="button"
@@ -629,8 +628,13 @@ const RentCalendar = () => {
                     </div>}
 
                     {showAddRental && <AddRental
+                        key={editingRental?._id || 'new-rental'}
+                        rental={editingRental}
                         selectedDate={selectedDate}
-                        setShowAddRental={setShowAddRental}
+                        onClose={() => {
+                            setShowAddRental(false)
+                            setEditingRental(null)
+                        }}
                         onRentalAdded={() => setRentalReloadKey((key) => key + 1)}
                     />}
                     {showRentalDetails && <ShowCurrentRental setShowRentalDetails={setShowRentalDetails} selectedHebrew={selectedHebrew} rentalsByDate ={rentalsByDate }
@@ -656,14 +660,6 @@ const RentCalendar = () => {
                             />
                         </div>
                     </div>}
-                    {showTasks && <section className="calendar-tasks-empty" aria-live="polite">
-                        <div>
-                            <h3>משימות לתאריך {selectedHebrew.display}</h3>
-                            <p>אין משימות להצגה כרגע.</p>
-                        </div>
-                        <button type="button" onClick={() => setShowTasks(false)} aria-label="סגירת המשימות">×</button>
-                    </section>}
-
                 </div>
             </div>
         </div>

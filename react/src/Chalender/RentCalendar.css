@@ -303,35 +303,43 @@
 }
 
 .calendar-day.rental-start {
-  background-image: linear-gradient(to right, #daa9fa 50%, transparent 50%);
+  background-image: linear-gradient(to right, #daa9fa calc(50% - 0.75rem), transparent calc(50% - 0.75rem));
 }
 
 .calendar-day.rental-end {
-  background-image: linear-gradient(to left, #daa9fa 50%, transparent 50%);
+  background-image: linear-gradient(to left, #daa9fa calc(50% - 0.75rem), transparent calc(50% - 0.75rem));
 }
 
 .calendar-day.rental-start.rental-end {
-  background-image:
-    linear-gradient(to right, #bb80e2 50%, transparent 50%),
-    linear-gradient(to left, #bb80e2 50%, transparent 50%);
+  background-image: linear-gradient(
+    to right,
+    #daa9fa calc(50% - 0.75rem),
+    #f8fafc calc(50% - 0.75rem),
+    #f8fafc calc(50% + 0.75rem),
+    #daa9fa calc(50% + 0.75rem)
+  );
 }
 
 .calendar-day.rental-start:not(.selected):not(.shabbat)::before,
-.calendar-day.rental-end:not(.selected):not(.shabbat)::before {
+.calendar-day.rental-end:not(.selected):not(.shabbat)::after {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
   border: 1px solid #9b32e0;
-  border-radius: inherit;
   content: '';
   pointer-events: none;
 }
 
-.calendar-day.rental-start:not(.rental-end)::before {
-  clip-path: inset(0 50% 0 0);
+.calendar-day.rental-start::before {
+  left: 0;
+  right: calc(50% + 0.75rem);
+  border-radius: 0.9rem 0 0 0.9rem;
 }
 
-.calendar-day.rental-end:not(.rental-start)::before {
-  clip-path: inset(0 0 0 50%);
+.calendar-day.rental-end::after {
+  right: 0;
+  left: calc(50% + 0.75rem);
+  border-radius: 0 0.9rem 0.9rem 0;
 }
 
 .calendar-day.shabbat.rental-marked {
@@ -1018,48 +1026,6 @@
   overflow-wrap: anywhere;
 }
 
-.calendar-tasks-empty {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #dce6df;
-  border-inline-start: 4px solid #3c795c;
-  border-radius: 6px;
-  background: #f5f8f6;
-}
-
-.calendar-tasks-empty h3 {
-  margin: 0;
-  color: #20382b;
-  font-size: 1rem;
-}
-
-.calendar-tasks-empty p {
-  margin: 0.4rem 0 0;
-  color: #6c7c73;
-  font-size: 0.9rem;
-}
-
-.calendar-tasks-empty > button {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #dce6df;
-  border-radius: 5px;
-  background: #fff;
-  color: #52635a;
-  cursor: pointer;
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.calendar-tasks-empty > button:hover {
-  background: #e8f2ec;
-  color: #245b45;
-}
-
 @media (max-width: 800px) {
   .calendar-page {
     grid-template-columns: 1fr;
@@ -1117,4 +1083,3 @@
     flex: 1;
   }
 }
-

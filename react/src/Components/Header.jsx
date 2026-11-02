@@ -7,6 +7,7 @@ const Header = () => {
         { label: 'השכרות', to: '/rents' },
         { label: 'מלאי', to: '/amount' },
         { label: 'משימות', to: '/todos' },
+        { label: 'היסטוריה', to: '/history' },
     ]
 
     return (

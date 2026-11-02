@@ -52,7 +52,7 @@ const synchronizeScheduledTodos = async () => {
                 // השכרה עם נתונים לא תקינים לא תקבל תאריך סיום.
                 : null
         }
-    // מסירה השכרות שאין להן תאריך התחלה או סיום תקינים.
+        // מסירה השכרות שאין להן תאריך התחלה או סיום תקינים.
     }).filter((rent) => rent.startDate && rent.endDate)
 
     // בוחרת השכרות שעדיין לא הסתיימו.
@@ -80,7 +80,7 @@ const synchronizeScheduledTodos = async () => {
                 candidate.endDate >= activationDate &&
                 // מוודאת שההשכרה הקודמת מסתיימת לא אחרי תחילת ההשכרה הנוכחית.
                 candidate.endDate <= rent.startDate
-            // סוגרת את תנאי הסינון של ההשכרות הקודמות.
+                // סוגרת את תנאי הסינון של ההשכרות הקודמות.
             ))
             // ממיינת לפי מועד סיום כדי לבחור את ההשכרה שמסתיימת אחרונה.
             .sort((first, second) => first.endDate.localeCompare(second.endDate))
@@ -111,21 +111,22 @@ const synchronizeScheduledTodos = async () => {
         )
         // מעדכנת את המשימות רק אם ההשכרה סומנה בהצלחה ולא הופעלה במקביל.
         if (activatedRent) {
-            // מאפסת את מצב ההשלמה של כל המשימות עבור ההשכרה החדשה.
-            await Todo.updateMany({}, { $set: { status: false } })
-            // מציגה את המשימות הזמניות שמצטרפות לרשימה בהפעלה זו.
+            // מאפסת את מצב המשימות להשכרה החדשה.
             await Todo.updateMany(
-                // בוחרת רק משימות שמוגדרות כזמניות.
-                { isTemporary: true },
-                // הופכת אותן לזמינות להצגה.
+                {},
+                { $set: { status: false, show: false } }
+            )
+            // מפעילה מחדש משימות קבועות בלבד.
+            await Todo.updateMany(
+                { isTemporary: { $ne: true } },
                 { $set: { show: true } }
             )
         }
-    // מסיימת את מעבר הבדיקה על כל ההשכרות שעדיין לא הסתיימו.
+        // מסיימת את מעבר הבדיקה על כל ההשכרות שעדיין לא הסתיימו.
     }
     // מחזירה אם יש כרגע חלון פעיל להצגת המשימות.
     return todoWindowOpen
-// מסיימת את פונקציית הסנכרון.
+    // מסיימת את פונקציית הסנכרון.
 }
 
 const createNewTodo = async (req, res) => {
@@ -134,8 +135,8 @@ const createNewTodo = async (req, res) => {
     if (!cleanTitle) {
         return res.send("title is required")
     }
-    let todo= await Todo.findOne({ title: cleanTitle })
-    if(todo){
+    let todo = await Todo.findOne({ title: cleanTitle })
+    if (todo) {
         return res.send("title must be uniqe")
     }
     const temporary = isTemporary === true
@@ -147,47 +148,47 @@ const createNewTodo = async (req, res) => {
     res.json(todo)
 }
 
-const getAllTodos = async (req,res)=>{
+const getAllTodos = async (req, res) => {
     const todoWindowOpen = await synchronizeScheduledTodos()
-    const todos= await Todo.find()
+    const todos = await Todo.find()
     res.json({ todos, todoWindowOpen })
 }
 
-const getTodoById = async (req,res) =>{
-    const {id}= req.params
-    const todo= await Todo.findById(id)
+const getTodoById = async (req, res) => {
+    const { id } = req.params
+    const todo = await Todo.findById(id)
     res.json(todo)
 }
 
-const updateTodo = async (req,res) =>{
-    const {title} =req.body
-    if( !title){
+const updateTodo = async (req, res) => {
+    const { title } = req.body
+    if (!title) {
         return res.send("title is required")
     }
-    let todo= await Todo.findOne({title})
-    todo.status=!todo.status
+    let todo = await Todo.findOne({ title })
+    todo.status = !todo.status
     await todo.save()
-    res.json(todo) 
+    res.json(todo)
 }
 
-const changeDisplay = async (req,res) =>{
-    const {title} =req.body
-    if( !title){
+const changeDisplay = async (req, res) => {
+    const { title } = req.body
+    if (!title) {
         return res.send("title is required")
     }
-    let todo= await Todo.findOne({title})
-    todo.show=!todo.show
+    let todo = await Todo.findOne({ title })
+    todo.show = !todo.show
     await todo.save()
-    res.json(todo) 
+    res.json(todo)
 }
 
-const deleteTodo= async (req,res) =>{
-    const {id}=req.params
-    const todo=await Todo.findById(id)
+const deleteTodo = async (req, res) => {
+    const { id } = req.params
+    const todo = await Todo.findById(id)
     await todo.deleteOne()
     res.send("erased")
 }
 
 
 
-module.exports = { createNewTodo ,getAllTodos, getTodoById,updateTodo,deleteTodo,changeDisplay,synchronizeScheduledTodos}
+module.exports = { createNewTodo, getAllTodos, getTodoById, updateTodo, deleteTodo, changeDisplay, synchronizeScheduledTodos }
