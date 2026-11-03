@@ -4,8 +4,9 @@ const mongoose=require("mongoose")
 const cors = require("cors")
 const corsOptions = require("./config/corsOptions")
 const connectDB = require("./config/connectDB")
+const verifyJWT = require("./middleware/verifyJWT")
 const { synchronizeScheduledTodos } = require("./controllers/todosController")
-const PORT = process.env.PORT || 7100
+const PORT = process.env.PORT || 7200
 const app = express()
 connectDB()
 
@@ -15,13 +16,15 @@ app.use(express.json())
 
 // app.use("/api/story",require("./routes/storyRoute"))
 app.use("/api/auth",require("./routes/authRoute"))
+app.use(verifyJWT)
+
 app.use("/api/incomes",require("./routes/incomesRoute"))
 app.use("/api/outcomes",require("./routes/outcomesRoute"))
 app.use("/api/rents",require("./routes/rentsRoute"))
 app.use("/api/renters",require("./routes/rentersRoute"))
 app.use("/api/amount",require("./routes/amountRoute"))
 app.use("/api/todos",require("./routes/todosRoute"))
-
+app.use("/api/users",require("./routes/userRoute"))
 //routes
 app.get("/", (req, res) => {
     res.send("this is the home page")

@@ -13,7 +13,7 @@ const Header = () => {
     return (
         <header className="topbar-wrap">
             <div className="main-menubar">
-                <NavLink to="/" className="brand-box" aria-label="לדף הבית">
+                <NavLink to="/home" className="brand-box" aria-label="לדף הבית" >
                     <span className="brand-icon pi pi-home" />
                     <span>לדף הבית</span>
                 </NavLink>

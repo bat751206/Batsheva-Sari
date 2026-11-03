@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import SingleTodo from './SingleTodo'
 import AddTodos from './AddTodos'
+import AuthContext from '../Components/AuthContext'
 import './Todos.css'
 
 const Todos = () => {
+    const { isAdmin } = useContext(AuthContext)
     const [info, setInfo] = useState([])
     const [add, setAdd] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
@@ -39,7 +41,7 @@ const Todos = () => {
                     <p className="todos-eyebrow">עושות סדר ביום</p>
                     <h1>המשימות שלנו</h1>
                 </div>
-                <button
+                {isAdmin && <button
                     className="todos-add-button"
                     type="button"
                     onClick={() => setAdd(!add)}
@@ -47,7 +49,7 @@ const Todos = () => {
                 >
                     <span aria-hidden="true">{add ? '−' : '+'}</span>
                     {add ? 'סגירת רשימת המשימות' : 'הוספת משימה לביצוע'}
-                </button>
+                </button>}
             </header>
 
             <div className="todos-summary" aria-label="סיכום משימות">
@@ -119,7 +121,7 @@ const Todos = () => {
                 )}
             </section>
 
-            {add && (
+            {add && isAdmin && (
                 <AddTodos
                     todos={info}
                     onClose={() => setAdd(false)}

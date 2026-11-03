@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { calendar, Location } from '@hebcal/core'
 import { HDate, isLeapYear } from '@hebcal/hdate'
 import './RentCalendar.css'
@@ -6,6 +6,7 @@ import axios from 'axios'
 import AddRental from './AddRental'
 import ShowCurrentRental from './ShowCurrentRental'
 import UpdatePayment from './UpdatePayment'
+import AuthContext from '../Components/AuthContext'
 const weekdayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
 
 const hebrewDayLetters = {
@@ -135,6 +136,7 @@ const getHebrewDate = (gregorianDate, dayData) => {
 }
 
 const RentCalendar = () => {
+    const { isAdmin } = useContext(AuthContext)
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [locationName, setLocationName] = useState('Jerusalem')
@@ -573,7 +575,7 @@ const RentCalendar = () => {
                         ref={contextMenuRef}
                         style={{ left: contextMenu.left, top: contextMenu.top }}
                     >
-                        <button
+                        {contextMenuOccupiedRentals.length > 0 ? <button
                             type="button"
                             role="menuitem"
                             onClick={() => {
@@ -584,11 +586,25 @@ const RentCalendar = () => {
                                 setContextMenu(null)
                             }}
                         >
-                            <i className={`pi ${contextMenuOccupiedRentals.length > 0 ? 'pi-eye' : 'pi-plus'}`} aria-hidden="true" />
-                            {contextMenuOccupiedRentals.length > 0 ? 'הצגת השכרה' : 'הוסף השכרה'}
-                        </button>
+                            <i className="pi pi-eye" aria-hidden="true" />
+                            הצגת השכרה
+                        </button> : isAdmin && <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                                setSelectedDate(contextMenu.date)
+                                setEditingRental(null)
+                                setShowAddRental(true)
+                                setShowRentalDetails(false)
+                                setContextMenu(null)
+                            }}
+                        >
+                            <i className="pi pi-plus" aria-hidden="true" />
+                            הוסף השכרה
+                        </button>}
                         {contextMenuRentals.map((rental) => (
                             <React.Fragment key={rental._id}>
+                                {isAdmin && <>
                                 <button
                                     type="button"
                                     role="menuitem"
@@ -623,11 +639,12 @@ const RentCalendar = () => {
                                     <i className="pi pi-wallet" aria-hidden="true" />
                                     עדכון תשלום{rental.renter?.name ? ` - ${rental.renter.name}` : ''}
                                 </button>}
+                                </>}
                             </React.Fragment>
                         ))}
                     </div>}
 
-                    {showAddRental && <AddRental
+                    {isAdmin && showAddRental && <AddRental
                         key={editingRental?._id || 'new-rental'}
                         rental={editingRental}
                         selectedDate={selectedDate}
@@ -639,7 +656,7 @@ const RentCalendar = () => {
                     />}
                     {showRentalDetails && <ShowCurrentRental setShowRentalDetails={setShowRentalDetails} selectedHebrew={selectedHebrew} rentalsByDate ={rentalsByDate }
                     formatDateInput ={formatDateInput } selectedDate ={selectedDate }/>}
-                    {paymentRental && <div
+                    {isAdmin && paymentRental && <div
                         className="calendar-modal-backdrop"
                         onMouseDown={(event) => {
                             if (event.target === event.currentTarget) setPaymentRental(null)

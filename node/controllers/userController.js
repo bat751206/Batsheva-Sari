@@ -12,16 +12,13 @@ const getUserById = async (req,res) =>{
 }
 
 const updateUser = async (req,res) =>{
-    const {id,name,username,email,address,phone} =req.body
-    if(!id || !name){
-        return res.send("id and name is required")
+    const {id,username,password} =req.body
+    if(!id){
+        return res.send("id is required")
     }
     let user= await User.findById(id)
-    user.name=name
     user.username=username
-    user.email=email
-    user.address=address
-    user.phone=phone
+    user.password=password
     await user.save()
     res.json(user) 
 }

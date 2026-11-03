@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import SingleOutcome from './SingleOutcome'
 import AddOutcome from './AddOutcome'
 import Shopping from './Shopping'
+import AuthContext from '../Components/AuthContext'
 import './Outcomes.css'
 
 const getOutcomeMonth = (value) => {
@@ -18,6 +19,7 @@ const getOutcomeMonth = (value) => {
 }
 
 const Outcomes = () => {
+    const { isAdmin } = useContext(AuthContext)
     const [addNew, setAddNew] = useState(false)
     const [addShopping, setAddShopping] = useState(false)
     const [info, setInfo] = useState([])
@@ -40,8 +42,12 @@ const Outcomes = () => {
     }
 
     useEffect(() => {
-        getData()
-    }, [])
+        if (isAdmin) {
+            getData()
+        } else {
+            setLoading(false)
+        }
+    }, [isAdmin])
 
     useEffect(() => {
         if (!addNew && !addShopping) return undefined
@@ -88,16 +94,16 @@ const Outcomes = () => {
             <header className="expenses-heading page-header">
                 <div>
                     <p className="eyebrow">ניהול כספים</p>
-                    <h1>הוצאות</h1>
-                    <p className="expenses-subtitle">מעקב מסודר אחר כל ההוצאות</p>
+                    <h1>{isAdmin ? 'הוצאות' : 'דיווח הוצאה'}</h1>
+                    <p className="expenses-subtitle">{isAdmin ? 'מעקב מסודר אחר כל ההוצאות' : 'דיווח על הוצאה חדשה'}</p>
                 </div>
-                <button className="expenses-refresh-button" type="button" onClick={getData} disabled={loading}>
+                {isAdmin && <button className="expenses-refresh-button" type="button" onClick={getData} disabled={loading}>
                     <i className={`pi ${loading ? 'pi-spin pi-spinner' : 'pi-refresh'}`} aria-hidden="true" />
                     רענון
-                </button>
+                </button>}
             </header>
 
-            <div className="expenses-summary-grid">
+            {isAdmin && <div className="expenses-summary-grid">
                 <article className="expenses-summary-card">
                     <span className="expenses-summary-icon total-expenses-icon"><i className="pi pi-wallet" aria-hidden="true" /></span>
                     <div>
@@ -112,7 +118,7 @@ const Outcomes = () => {
                         <strong>{info.length}</strong>
                     </div>
                 </article>
-            </div>
+            </div>}
 
             <section className="expenses-actions-panel">
                 <div>
@@ -153,13 +159,13 @@ const Outcomes = () => {
                         aria-modal="true"
                         aria-label={addNew ? 'הוצאה אחרת' : 'קנייה ועדכון מלאי'}
                     >
-                        {addNew && <AddOutcome setAddNew={setAddNew} onSaved={getData} />}
-                        {addShopping && <Shopping setAddShopping={setAddShopping} onSaved={getData} />}
+                        {addNew && <AddOutcome setAddNew={setAddNew} onSaved={isAdmin ? getData : undefined} />}
+                        {addShopping && <Shopping setAddShopping={setAddShopping} onSaved={isAdmin ? getData : undefined} />}
                     </section>
                 </div>
             )}
 
-            <section className="expenses-list-panel">
+            {isAdmin && <section className="expenses-list-panel">
                 <div className="expenses-list-heading">
                     <div>
                         <h2>רשימת הוצאות</h2>
@@ -211,7 +217,7 @@ const Outcomes = () => {
                         })}
                     </div>
                 )}
-            </section>
+            </section>}
         </section>
     )
 }
