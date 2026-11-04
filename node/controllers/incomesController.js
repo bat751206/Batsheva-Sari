@@ -1,4 +1,6 @@
 const Incomes = require("../models/incomes")
+// מייבא שליחת התראות למנהלים לאחר רישום הכנסה חדשה.
+const { notifyAdmins } = require("../services/emailNotifications")
 
 const createNewIncome = async (req, res) => {
     const { date, sum, paymentType, renter, rental, incomeType } = req.body
@@ -10,7 +12,17 @@ const createNewIncome = async (req, res) => {
     {
         return res.send("תאריך לא תקין נסה שוב")
     }
+        // שומר את ההכנסה החדשה במסד לפני שליחת ההתראה.
         const income = await Incomes.create({ date, sum, paymentType, renter, rental, incomeType })
+    // מודיע למנהלים שנרשמה הכנסה חדשה.
+    await notifyAdmins({
+        // מגדיר כותרת שמציינת שהתקבלה הכנסה.
+        subject: "נכנסה הכנסה חדשה",
+        // מציג את הסכום ואת תאריך ההכנסה בפורמט ישראלי.
+        message: `נרשמה הכנסה בסך ${income.sum} ₪ בתאריך ${new Date(income.date).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" })}.`,
+        // מפנה את הנמען לדף ההכנסות.
+        path: "/account/incomes"
+    })
     res.json(income)
 }
 

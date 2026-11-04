@@ -1,11 +1,27 @@
 const Amounts = require("../models/amounts")
+// מייבא שליחת התראות למנהלים כאשר מוצר מגיע לכמות המינימלית.
+const { notifyAdmins } = require("../services/emailNotifications")
 
 const createNewAmount = async (req, res) => {
     const { product, proAmount } = req.body
-    if (!product || !proAmount) {
+    // מוודא שהמוצר והכמות תקינים ושהכמות אינה נמוכה מהמינימום המותר.
+    if (!product || proAmount === undefined || !Number.isFinite(Number(proAmount)) || Number(proAmount) < 0) {
         return res.send("product and amount is required")
     }
+    // יוצר את פריט המלאי לאחר בדיקת הנתונים.
     const amount = await Amounts.create({ product, proAmount })
+    // שולח התראה אם הפריט נוצר כשהכמות שלו כבר במינימום, אפס.
+    if (Number(amount.proAmount) === 0) {
+        // מעביר למנהל את פרטי הפריט ואת קישור דף המלאי.
+        await notifyAdmins({
+            // מגדיר נושא שמבהיר שהמלאי אזל.
+            subject: "המלאי אזל",
+            // מציין את שם המוצר ואת הכמות המינימלית.
+            message: `הכמות של ${amount.product} הגיעה למינימום (0).`,
+            // מפנה את הנמען לדף המלאי במערכת.
+            path: "/amount"
+        })
+    }
     res.json(amount)
 }
 
@@ -46,8 +62,24 @@ const decreaseAmount = async (req, res) => {
         return res.send("product is not in stock")
     }
     let amount = await Amounts.findById(id)
+    // מחזיר שגיאה אם פריט המלאי נעלם בין החיפוש לעדכון.
+    if (!amount) return res.status(404).json({ message: "המוצר לא נמצא במלאי" })
+    // שומר את הכמות הקודמת כדי לזהות מעבר ממשי לאפס.
+    const previousQuantity = Number(amount.proAmount)
     amount.proAmount -= Number(lessAmount)
     await amount.save()
+    // מתריע רק כאשר הכמות ירדה מחיובית למינימום, ולא בעדכון חוזר שכבר נמצא באפס.
+    if (previousQuantity > 0 && Number(amount.proAmount) === 0) {
+        // מעביר למנהל את פרטי הפריט ואת קישור דף המלאי.
+        await notifyAdmins({
+            // מגדיר נושא שמבהיר שהמלאי אזל.
+            subject: "המלאי אזל",
+            // מציין את שם המוצר ואת הכמות המינימלית.
+            message: `הכמות של ${amount.product} הגיעה למינימום (0).`,
+            // מפנה את הנמען לדף המלאי במערכת.
+            path: "/amount"
+        })
+    }
     res.json(amount)
 }
 

@@ -8,6 +8,10 @@ const Register = () => {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  // שומרת את כתובת המייל האופציונלית בזמן מילוי הטופס.
+  const [email, setEmail] = useState('')
+  // משאירה את ההתראות כבויות עד שהמשתמשת מאשרת אותן במפורש.
+  const [emailNotifications, setEmailNotifications] = useState(false)
 
   const registerUser = async (event) => {
     event.preventDefault()
@@ -16,9 +20,17 @@ const Register = () => {
     const formData = new FormData(event.currentTarget)
     const username = formData.get('username')
     const password = formData.get('password')
+    // מסירה רווחים מיותרים לפני שליחת הכתובת האופציונלית לשרת.
+    const cleanEmail = email.trim()
 
+      // יוצרת חשבון עם כתובת המייל והסכמה מפורשת לקבלת התראות.
         try {
-            await axios.post('http://localhost:7200/api/auth/register', { username, password })
+            await axios.post('http://localhost:7200/api/auth/register', {
+      username, // שולחת לשרת את שם המשתמש שהוזן בטופס.
+      password, // שולחת את הסיסמה כדי שהשרת יצפין אותה לפני השמירה.
+      email: cleanEmail, // שולחת את כתובת המייל לאחר ניקוי רווחים, או מחרוזת ריקה.
+      emailNotifications: Boolean(cleanEmail && emailNotifications) // מאשרת התראות רק אם הוזן מייל וסומנה תיבת ההסכמה.
+      })
       navigate('/')
     } catch (requestError) {
       setError(requestError.response?.status === 409
@@ -28,6 +40,29 @@ const Register = () => {
       setIsSubmitting(false)
         }
     }
+
+  // מגדירה בנפרד את מאפייני שדה המייל כדי להסביר את תפקידו של כל אחד מהם.
+  const emailInputProps = {
+    id: 'register-email', // מקשרת בין שדה המייל לתווית שמוצגת לידו.
+    name: 'email', // משתמשת בשם השדה שהשרת מצפה לקבל.
+    type: 'email', // מפעילה בדיקת תקינות בסיסית של כתובת בדפדפן.
+    autoComplete: 'email', // מאפשרת לדפדפן להציע כתובת שמורה.
+    placeholder: 'name@example.com', // מציגה דוגמה למבנה הכתובת המצופה.
+    value: email, // מסנכרנת את תוכן השדה עם מצב React.
+    onChange: (event) => { // מעדכנת את מצב הכתובת בכל הקלדה.
+      setEmail(event.target.value) // שומרת את הערך החדש שהוקלד.
+      if (!event.target.value.trim()) setEmailNotifications(false) // מבטלת הסכמה אם כתובת המייל נמחקה.
+    }
+  }
+
+  // מגדירה את התנהגות תיבת הסימון ואת מצב ההסכמה לקבלת מיילים.
+  const notificationCheckboxProps = {
+    className: 'auth-notification-checkbox', // מחילה על התיבה את העיצוב הייעודי שלה.
+    type: 'checkbox', // יוצרת פקד בחירה של כן או לא.
+    checked: emailNotifications, // משקפת אם המשתמשת בחרה לקבל התראות.
+    disabled: !email.trim(), // מונעת אישור התראות לפני הזנת כתובת.
+    onChange: (event) => setEmailNotifications(event.target.checked) // שומרת את הבחירה המפורשת של המשתמשת.
+  }
 
   return (
     <main className="auth-page" dir="rtl">
@@ -56,6 +91,17 @@ const Register = () => {
                   <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`} aria-hidden="true" />
                 </button>
               </div>
+
+              {/* מציגה את התווית ואת שדה המייל האופציונלי שהוגדרו למעלה. */}
+              <label htmlFor="register-email">כתובת מייל (לא חובה)</label>
+              <input {...emailInputProps} />
+
+              {/* מקבצת את תיבת האישור עם הטקסט שמסביר את משמעותה. */}
+              <label className="auth-notification-consent">
+                {/* מציגה את תיבת ההסכמה לפי המאפיינים והמצב שהוגדרו למעלה. */}
+                <input {...notificationCheckboxProps} />
+                <span>אני מאשרת לקבל התראות למייל</span>
+              </label>
 
               {error && <p className="auth-error" role="alert">{error}</p>}
               <button className="auth-submit" type="submit" disabled={isSubmitting}>

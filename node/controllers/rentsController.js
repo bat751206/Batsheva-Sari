@@ -1,6 +1,8 @@
 const Rents = require("../models/rents")
 const Renters = require("../models/renters")
 const Incomes = require("../models/incomes")
+// מייבא התראות למנהלים על תשלום חדש שנרשם להשכרה.
+const { notifyAdmins } = require("../services/emailNotifications")
 const { createNewRenter } = require("./rentersController")
 const {addrentalToRenter} = require("./rentersController")
 
@@ -110,7 +112,8 @@ const paymentUpdateRent = async (req,res) =>{
     if (!paymentType) return res.status(400).json({ message: "יש לבחור אמצעי תשלום" })
 
     const fullIncomeAmount = Number(rent.sumPayment) * (rent.tivuch ? 0.85 : 1)
-    await Incomes.findOneAndUpdate(
+    // יוצר הכנסה רק אם עדיין לא נרשם תשלום מלא להשכרה זו.
+    const paymentResult = await Incomes.updateOne(
         { rental: rent._id, incomeType: 'payment' },
         {
             $set: {
@@ -126,6 +129,18 @@ const paymentUpdateRent = async (req,res) =>{
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
     )
+    // שולח התראה רק כאשר נוצר רישום תשלום חדש ולא בעדכון של תשלום קיים.
+    if (paymentResult.upsertedCount > 0) {
+        // מודיע למנהלים על התשלום החדש ומקשר לדף ההכנסות.
+        await notifyAdmins({
+            // מגדיר כותרת שמבהירה שנכנס תשלום חדש.
+            subject: "נכנס תשלום חדש",
+            // מציג את סכום התשלום שנרשם.
+            message: `נרשם תשלום חדש בסך ${fullIncomeAmount} ₪ עבור השכרה.`,
+            // מפנה את הנמען לרשימת ההכנסות.
+            path: "/account/incomes"
+        })
+    }
     await Incomes.deleteMany({ rental: rent._id, incomeType: 'advance' })
     rent.isPaid=true
     rent.paymentType=paymentType

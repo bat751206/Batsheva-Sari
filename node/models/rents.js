@@ -21,6 +21,13 @@ const rentsSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // שומר את התאריך שבו נשלחה תזכורת הצהריים כדי למנוע שליחה חוזרת.
+    todoReminderSentDate: {
+        // שומר תאריך בפורמט טקסט אחיד, למשל YYYY-MM-DD.
+        type: String,
+        // ערך ריק מציין שעדיין לא נשלחה תזכורת.
+        default: ''
+    },
     renter: {
         type: mongoose.ObjectId,
         ref: 'Renter'

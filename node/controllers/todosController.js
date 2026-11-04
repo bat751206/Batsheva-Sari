@@ -1,5 +1,15 @@
 const Todo = require("../models/todos")
 const Rents = require("../models/rents")
+// מייבא שליחה למשתמשים ולמנהלים עבור אירועי המשימות.
+const { notifyUsersOfPendingTodos, notifyAdmins } = require("../services/emailNotifications")
+
+// מאתר את שמות המשימות הגלויות שעדיין לא סומנו כהושלמו.
+const getPendingTodoTitles = async () => {
+    // שולף מהמסד רק משימות פעילות שטרם בוצעו.
+    const todos = await Todo.find({ show: true, status: false }).select("title").lean()
+    // מחזיר רשימת שמות פשוטה לשילוב בהודעות.
+    return todos.map(({ title }) => title)
+}
 
 const getDateKey = (value) => {
     const date = new Date(value)
@@ -32,7 +42,8 @@ const synchronizeScheduledTodos = async () => {
     // שומרת את חלק התאריך בלבד כדי לסנן השכרות שכבר הסתיימו.
     const todayKey = nowKey.slice(0, 10)
     // טוענת מהמסד את השדות הדרושים לחישוב מועדי ההשכרה והפעלת המשימות.
-    const rents = await Rents.find().select("date numOfNights todoListActivated").lean()
+    // טוען גם את סימון התזכורת היומית כדי למנוע משלוח חוזר.
+    const rents = await Rents.find().select("date numOfNights todoListActivated todoReminderSentDate").lean()
     // ממירה כל השכרה לאובייקט עם תאריך התחלה ותאריך סיום מחושבים.
     const rentDates = rents.map((rent) => {
         // מנרמלת את תאריך תחילת ההשכרה לפורמט YYYY-MM-DD.
@@ -99,11 +110,9 @@ const synchronizeScheduledTodos = async () => {
             todoWindowOpen = true
         }
 
-        // מדלגת על העדכון אם המועד לא הגיע או שההשכרה כבר הפעילה את המשימות.
-        if (nowKey < activationKey || rent.todoListActivated) continue
-
         // מסמנת במסד את ההשכרה כמופעלת, רק אם היא עדיין לא סומנה כך.
-        const activatedRent = await Rents.findOneAndUpdate(
+        // מנסה להפעיל את המשימות רק כשהמועד הגיע והשכרה זו טרם הפעילה אותן.
+        const activatedRent = nowKey < activationKey || rent.todoListActivated ? null : await Rents.findOneAndUpdate(
             // מאתרת את ההשכרה לפי מזהה ודורשת שסימן ההפעלה לא יהיה true.
             { _id: rent._id, todoListActivated: { $ne: true } },
             // משנה את סימן ההפעלה כדי למנוע איפוס חוזר עבור אותה השכרה.
@@ -121,6 +130,36 @@ const synchronizeScheduledTodos = async () => {
                 { isTemporary: { $ne: true } },
                 { $set: { show: true } }
             )
+            // אוסף את המשימות שנותרו פתוחות לאחר ההפעלה.
+            const pendingTitles = await getPendingTodoTitles()
+            // מודיע לכל המשתמשים והמנהלים שאישרו מייל על פתיחת המשימות.
+            if (pendingTitles.length) await notifyUsersOfPendingTodos(pendingTitles)
+        }
+
+        // בודק אם הגענו לצהריים ביום תחילת ההשכרה ואם התזכורת עוד לא נשלחה.
+        if (rent.startDate === todayKey && nowKey >= `${todayKey}T12:00` && rent.todoReminderSentDate !== todayKey) {
+            // מסמן את התאריך באופן אטומי כדי למנוע תזכורות כפולות בסריקות מקבילות.
+            const reminderClaim = await Rents.findOneAndUpdate(
+                // דורש שהתזכורת לא סומנה היום לפני ביצוע העדכון.
+                { _id: rent._id, todoReminderSentDate: { $ne: todayKey } },
+                // שומר את היום שבו התזכורת נשלחה או נבדקה.
+                { $set: { todoReminderSentDate: todayKey } }
+            )
+            // ממשיך רק אם התהליך הזה הצליח לתפוס את סימון התזכורת.
+            if (reminderClaim) {
+                // טוען את המשימות שעדיין לא הושלמו.
+                const pendingTitles = await getPendingTodoTitles()
+                // שולח למנהלים תזכורת רק אם נשארו משימות פתוחות.
+                if (pendingTitles.length) {
+                    // מפרט בהודעה את המשימות שדורשות טיפול.
+                    await notifyAdmins({
+                        // מגדיר כותרת ברורה לתזכורת יום תחילת ההשכרה.
+                        subject: "תזכורת: נותרו משימות ביום תחילת ההשכרה",
+                        // כולל את שמות המשימות שלא הושלמו.
+                        message: `המשימות הבאות עדיין לא הושלמו:\n${pendingTitles.map((title) => `• ${title}`).join("\n")}`
+                    })
+                }
+            }
         }
         // מסיימת את מעבר הבדיקה על כל ההשכרות שעדיין לא הסתיימו.
     }
@@ -140,11 +179,24 @@ const createNewTodo = async (req, res) => {
         return res.send("title must be uniqe")
     }
     const temporary = isTemporary === true
+    // סופר משימות פתוחות לפני יצירת משימה קבועה כדי לזהות פתיחת רשימה חדשה.
+    const pendingBefore = temporary ? [] : await getPendingTodoTitles()
+    // שומר את המשימה החדשה ואת סוגה במסד הנתונים.
     todo = await Todo.create({
+        // שומר את הכותרת לאחר ניקוי רווחים.
         title: cleanTitle,
+        // מסמן אם המשימה זמנית או קבועה.
         isTemporary: temporary,
+        // מציג מיד משימה קבועה ומסתיר משימה זמנית עד להפעלתה.
         show: !temporary
     })
+    // שולח התראה רק אם יצירת המשימה פתחה רשימת משימות שלא היו בה משימות פתוחות.
+    if (!temporary && pendingBefore.length === 0) {
+        // טוען את רשימת המשימות הפתוחות כדי לכלול את הכותרות במייל.
+        const pendingTitles = await getPendingTodoTitles()
+        // מודיע למשתמשים רק אם קיימת משימה לביצוע.
+        if (pendingTitles.length) await notifyUsersOfPendingTodos(pendingTitles)
+    }
     res.json(todo)
 }
 
@@ -166,8 +218,28 @@ const updateTodo = async (req, res) => {
         return res.send("title is required")
     }
     let todo = await Todo.findOne({ title })
+    // מחזיר שגיאת 404 כשהכותרת לא תואמת משימה קיימת.
+    if (!todo) return res.status(404).json({ message: "המשימה לא נמצאה" })
+    // שומר כמה משימות היו פתוחות לפני שינוי מצב המשימה.
+    const pendingBefore = todo.show ? await getPendingTodoTitles() : []
     todo.status = !todo.status
     await todo.save()
+    // מודיע למנהלים כשהמשימה הזו הייתה האחרונה שנותרה פתוחה והושלמה כעת.
+    if (todo.show && todo.status && pendingBefore.length === 1) {
+        // שולח הודעת סיום לאחר השלמת כל המשימות הגלויות.
+        await notifyAdmins({
+            // מגדיר כותרת שמציינת שכל המשימות הושלמו.
+            subject: "כל המשימות הושלמו",
+            // מוסר בגוף ההודעה שכל רשימת המשימות הושלמה.
+            message: "כל המשימות לביצוע סומנו כהושלמו."
+        })
+    // מודיע למשתמשים אם סימון משימה כלא הושלמה פתח מחדש את רשימת העבודה.
+    } else if (todo.show && !todo.status && pendingBefore.length === 0) {
+        // טוען את המשימות הפתוחות שנוצרו מחדש.
+        const pendingTitles = await getPendingTodoTitles()
+        // שולח הודעה אם נותרה לפחות משימה אחת לביצוע.
+        if (pendingTitles.length) await notifyUsersOfPendingTodos(pendingTitles)
+    }
     res.json(todo)
 }
 
@@ -177,8 +249,19 @@ const changeDisplay = async (req, res) => {
         return res.send("title is required")
     }
     let todo = await Todo.findOne({ title })
+    // מחזיר שגיאת 404 כשהכותרת לא תואמת משימה קיימת.
+    if (!todo) return res.status(404).json({ message: "המשימה לא נמצאה" })
+    // זוכר אם המשימה הייתה מוסתרת לפני שינוי התצוגה.
+    const wasHidden = !todo.show
     todo.show = !todo.show
     await todo.save()
+    // בודק אם הצגת המשימה פתחה לראשונה רשימת עבודה.
+    if (wasHidden && todo.show) {
+        // אוסף משימות פתוחות כדי לכלול אותן בהתראה.
+        const pendingTitles = await getPendingTodoTitles()
+        // שולח הודעה רק אם המשימה שנחשפה היא היחידה שפתוחה כרגע.
+        if (pendingTitles.length === 1) await notifyUsersOfPendingTodos(pendingTitles)
+    }
     res.json(todo)
 }
 
