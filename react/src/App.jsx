@@ -1,11 +1,13 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { useState } from 'react' 
+import { jwtDecode } from 'jwt-decode'
+import AuthContext from './Components/AuthContext'
 import Accounts from './accounts/Accounts'
 import Incomes from './accounts/Incomes'
 import Outcomes from './accounts/Outcomes'
 import MonthlyBalance from './accounts/MonthlyBalance'
-import './App.css'
 import Layout from './Components/Layout'
 import RentCalendar from './Chalender/RentCalendar'
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ShowStock from './stock/ShowStock'
 import Todos from './Todos/Todos'
 import HomePage from './Components/HomePage'
@@ -17,9 +19,8 @@ import RequireAuth from './Components/RequireAuth'
 import RequireAdmin from './Components/RequireAdmin'
 import Register from './Components/Register'  
 import AddAdmin from './AdminSetting/AddAdmin'
-import { useState } from 'react' 
-import { jwtDecode } from 'jwt-decode'
-import AuthContext from './Components/AuthContext'
+import './App.css'
+
 
 const getIsAdminFromToken = () => {
   const token = localStorage.getItem('accessToken')

@@ -1,4 +1,3 @@
-import React from 'react'
 
 const SingleProduct = ({ product, onSelect }) => {
     const quantity = Number(product.proAmount || 0)

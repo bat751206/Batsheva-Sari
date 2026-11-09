@@ -1,4 +1,3 @@
-import React from 'react'
 
 const ShowCurrentRental = ({setShowRentalDetails,selectedHebrew,rentalsByDate,formatDateInput,selectedDate  }) => {
     return (

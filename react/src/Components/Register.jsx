@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
+import bedroomImage from '../../../public/חדר שינה.JPG'
 import './Auth.css'
 
 const Register = () => {
@@ -66,7 +68,7 @@ const Register = () => {
 
   return (
     <main className="auth-page" dir="rtl">
-      <div className="auth-layout">
+      <div className="auth-layout auth-layout-split">
         <section className="auth-form-panel" aria-labelledby="register-title">
           <div className="auth-form-content">
             <Link to="/" className="auth-brand" aria-label="חזרה למסך ההתחברות">
@@ -114,13 +116,9 @@ const Register = () => {
           </div>
         </section>
 
-        <aside className="auth-visual" aria-label="חלל אירוח מואר ומזמין">
-          <img className="auth-visual-image" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=88" alt="סלון מואר עם חלונות רחבים ופינת ישיבה" />
-          <div className="auth-visual-content">
-            <span className="auth-visual-kicker">ניהול השכרות, בפשטות</span>
-            <p>כל הפרטים החשובים,<br />במקום אחד.</p>
-            <span className="auth-visual-rule" aria-hidden="true" />
-          </div>
+        <aside className="auth-visual" aria-label="חדר שינה מואר עם חלונות רחבים">
+          <img className="auth-visual-image" src={bedroomImage} alt="חדר שינה עם מיטה זוגית וחלונות גדולים" />
+    
         </aside>
       </div>
     </main>

@@ -185,18 +185,22 @@
 
 .app-shell {
   min-height: 100vh;
-  padding: 1.25rem;
+  padding: 0;
 }
 
 .page-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem 0 2rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(1rem, 2.2vh, 1.5rem) clamp(0.75rem, 1.5vw, 1.5rem) 1rem;
 }
 
 .topbar-wrap {
-  max-width: 1200px;
-  margin: 0 auto 1.25rem;
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  padding-inline: clamp(0.5rem, 1vw, 1rem);
+  padding-block-start: 12px;
 }
 
 .main-menubar {
@@ -307,7 +311,7 @@
 
 @media (max-width: 640px) {
   .app-shell {
-    padding: 0.75rem;
+    padding: 0;
   }
 
   .main-menubar {

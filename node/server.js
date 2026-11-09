@@ -35,7 +35,7 @@ mongoose.connection.once('open', () => {
     synchronizeScheduledTodos().catch((err) => console.error('Failed to sync scheduled todos', err))
     setInterval(() => {
         synchronizeScheduledTodos().catch((err) => console.error('Failed to sync scheduled todos', err))
-    }, 60 * 1000)
+    }, 60 * 60 * 1000)
     app.listen(PORT, () => console.log(`Server running on port
 ${PORT}`))
 })

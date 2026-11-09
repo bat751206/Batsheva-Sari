@@ -1,12 +1,15 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { calendar, Location } from '@hebcal/core'
 import { HDate, isLeapYear } from '@hebcal/hdate'
-import './RentCalendar.css'
 import axios from 'axios'
 import AddRental from './AddRental'
 import ShowCurrentRental from './ShowCurrentRental'
 import UpdatePayment from './UpdatePayment'
 import AuthContext from '../Components/AuthContext'
+import './RentCalendar.css'
+
+
+
 const weekdayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
 
 const hebrewDayLetters = {

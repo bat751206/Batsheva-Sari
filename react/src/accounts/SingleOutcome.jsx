@@ -1,4 +1,3 @@
-import React from 'react'
 
 const formatDate = (value) => {
     if (!value) return '—'

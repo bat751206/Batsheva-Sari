@@ -1,9 +1,10 @@
 import React from 'react'
 import { useContext } from "react"
-import AuthContext from '../Components/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Card } from 'primereact/card'
 import { Button } from 'primereact/button'
+import AuthContext from '../Components/AuthContext'
+
 
 const Accounts = () => {
     const { isAdmin } = useContext(AuthContext)
