@@ -1,4 +1,5 @@
 const User = require("../models/users") // מייבא את מודל המשתמשים כדי לאתר נמענים שאישרו קבלת מייל.
+let paymentNotificationSequence = 0
 
 // ממיר טקסט לערך בטוח להצגה בתוך הודעת HTML.
 const escapeHtml = (value) => String(value) // מבטיח שהערך יטופל כמחרוזת.
@@ -15,7 +16,7 @@ const getAppUrl = (path) => { // מקבלת נתיב יחסי של העמוד ה
 } // מסיימת את בניית הקישור.
 
 // שולח מייל לכתובת אחת ומחזיר אם ספק המייל קיבל את הבקשה.
-const sendEmailToAddress = async ({ email, subject, message, path = "/todos" }) => { // מקבל נמען, תוכן ונתיב לקישור.
+const sendEmailToAddress = async ({ email, subject, message, path = "/todos", includeSubject = true, includeLink = true }) => { // מקבל נמען, תוכן ואפשרויות עיצוב.
     const apiKey = process.env.RESEND_API_KEY // קורא את מפתח הגישה ל־Resend ממשתני הסביבה.
     const from = process.env.MAIL_FROM // קורא את כתובת השולח שאומתה ב־Resend.
     if (!apiKey || !from) { // בודק שמפתח API וכתובת שולח הוגדרו.
@@ -26,7 +27,10 @@ const sendEmailToAddress = async ({ email, subject, message, path = "/todos" }) 
     try { // תופס שגיאות רשת כדי שלא יפילו את פעולת המערכת.
         const link = getAppUrl(path) // בונה קישור מלא ליעד במערכת.
         const safeMessage = escapeHtml(message).replaceAll("\n", "<br>") // מגן על תוכן ההודעה ושומר ירידות שורה.
-        const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.7;color:#1d312c"><h2>${escapeHtml(subject)}</h2><p>${safeMessage}</p><p><a href="${escapeHtml(link)}">פתיחת המערכת</a></p></div>` // יוצר גוף מייל בעברית עם קישור.
+        const subjectHeading = includeSubject ? `<h2>${escapeHtml(subject)}</h2>` : "" // מוסיף כותרת בגוף רק להודעות רגילות.
+        const appLink = includeLink ? `<p><a href="${escapeHtml(link)}">פתיחת המערכת</a></p>` : "" // מוסיף קישור רק כשנדרש.
+        const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.7;color:#1d312c">${subjectHeading}<p>${safeMessage}</p>${appLink}</div>` // מרכיב גוף מייל בהתאם לאפשרויות העיצוב.
+        const textParts = [includeSubject ? subject : "", message, includeLink ? link : ""].filter(Boolean) // מרכיב תוכן טקסטואלי מאותם חלקים שנבחרו.
         const response = await fetch("https://api.resend.com/emails", { // שולח בקשת מייל לשירות Resend.
             method: "POST", // מגדיר יצירת הודעה חדשה.
             headers: { // מגדיר הרשאה וסוג תוכן לבקשה.
@@ -34,7 +38,7 @@ const sendEmailToAddress = async ({ email, subject, message, path = "/todos" }) 
                 "Content-Type": "application/json" // מציין שגוף הבקשה הוא JSON.
             }, // מסיים הגדרת כותרות.
             signal: AbortSignal.timeout(10000), // מבטל בקשה שלא הסתיימה בתוך עשר שניות.
-            body: JSON.stringify({ from, to: [email], subject, html, text: `${subject}\n\n${message}\n\n${link}` }) // מעביר את השולח, הנמען ותוכן המייל לספק.
+            body: JSON.stringify({ from, to: [email], subject, html, text: textParts.join("\n\n") }) // מעביר את השולח, הנמען ותוכן המייל לספק.
         }) // מסיים את בקשת השליחה.
         if (!response.ok) { // בודק אם Resend דחה את בקשת השליחה.
             const responseBody = await response.text() // קורא את פרטי השגיאה ש־Resend החזיר בלי לקרוא או להדפיס את מפתח ה־API.
@@ -110,4 +114,51 @@ const sendEmailConfirmation = (email) => sendEmailToAddress({ // מקבל כתו
     path: "/todos" // מצרף קישור לדף המשימות במערכת.
 }) // מסיים את יצירת הודעת האישור.
 
-module.exports = { notifyUsersOfPendingTodos, notifyAdmins, sendEmailConfirmation } // חושף את שלושת שירותי המייל לבקרים ולכלי החד־פעמי.
+// שולח הודעת ניסיון כללית לכתובת שסופקה בלי לדרוש חשבון משתמש במסד.
+const sendTestEmail = (email) => sendEmailToAddress({ // מקבל כתובת יעד לצורך בדיקת תצורה.
+    email, // שולח את ההודעה לכתובת שנמסרה בפקודה.
+    subject: "בדיקת שליחת מייל מהמערכת", // מבהיר לנמען שזו הודעת בדיקה.
+    message: "נוצר ע\"י הדרכת github copilot", // שולח בדיוק את הטקסט שהתבקש.
+    includeSubject: false, // משאיר את גוף הודעת הבדיקה ללא כותרת נוספת.
+    includeLink: false // משאיר בגוף רק את המשפט שהתבקש.
+}) // מסיים את יצירת הודעת הבדיקה.
+
+// שולח התראת תשלום קבועה לכתובת שהוגדרה בסביבה.
+const sendPaymentNotification = ({ renterName, paymentDate = new Date(), managerName } = {}) => { // מקבל את פרטי התשלום ואת המנהל שביצע אותו.
+    const email = process.env.PAYMENT_NOTIFICATION_EMAIL // טוען את כתובת היעד בלי לשמור אותה בקוד.
+    if (!email) { // בודק אם הוגדרה כתובת יעד לבדיקת תשלום.
+        console.warn("Payment notification skipped: configure PAYMENT_NOTIFICATION_EMAIL") // מסביר מדוע ההתראה לא נשלחה.
+        return Promise.resolve(false) // מאפשר לעדכון התשלום להמשיך גם ללא כתובת בדיקה.
+    } // מסיים את בדיקת כתובת היעד.
+    // מעצב את התאריך לתצוגה לפי אזור הזמן של ישראל.
+    const formattedDate = new Intl.DateTimeFormat("he-IL", {
+        timeZone: "Asia/Jerusalem", // מציג את התאריך בהתאם לשעון ישראל.
+        day: "2-digit", // שומר יום בפורמט דו־ספרתי.
+        month: "2-digit", // שומר חודש בפורמט דו־ספרתי.
+        year: "numeric" // כולל שנה מלאה.
+    }).format(new Date(paymentDate))
+    // מגדיר חלופות ברורות אם פרטי השוכר או המנהל חסרים.
+    const safeRenterName = renterName || "לא ידוע"
+    const safeManagerName = managerName || "מנהל"
+    // יוצר חותמת זמן ייחודית בכותרת כדי שלקוחות דואר יפרידו כל עדכון לשרשור חדש.
+    const sentAt = new Date()
+    const uniqueTimestamp = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Asia/Jerusalem", // משתמש בזמן ישראל גם בכותרת ההודעה.
+        year: "numeric", // כולל שנה כדי להבדיל בין שנים.
+        month: "2-digit", // כולל חודש דו־ספרתי.
+        day: "2-digit", // כולל יום דו־ספרתי.
+        hour: "2-digit", // כולל שעה.
+        minute: "2-digit", // כולל דקות.
+        second: "2-digit", // כולל שניות כדי להבדיל בין עדכונים סמוכים.
+        hourCycle: "h23" // מציג שעה בפורמט 24 שעות.
+    }).format(sentAt).replace(" ", "T") + `.${String(sentAt.getMilliseconds()).padStart(3, "0")}` // מוסיף אלפיות שנייה לייחודיות הכותרת.
+    return sendEmailToAddress({ // שולח הודעת תשלום ייעודית לכתובת שהוגדרה.
+        email, // שולח את ההתראה לכתובת הקבועה.
+        subject: `עדכון תשלום במערכת | ${uniqueTimestamp}-${++paymentNotificationSequence}`, // מבטיח נושא ייחודי גם לעדכונים באותה אלפית שנייה.
+        message: `ההשכרה של ${safeRenterName} שולמה בתאריך ${formattedDate} עודכן באמצעות: ${safeManagerName}`, // כולל את פרטי ההשכרה, התאריך ושם המנהל.
+        includeSubject: false, // משאיר את גוף המייל ללא כותרת נוספת.
+        includeLink: false // משאיר את גוף המייל ללא קישור נוסף.
+    }) // מסיים את יצירת התראת התשלום.
+} // מסיים שליחת התראת תשלום.
+
+module.exports = { notifyUsersOfPendingTodos, notifyAdmins, sendEmailConfirmation, sendTestEmail, sendPaymentNotification } // חושף את שירותי ההתראות לבקרים.

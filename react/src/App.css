@@ -249,6 +249,22 @@
   color: #3730a3;
 }
 
+.header-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.header-logout:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.35);
+  outline-offset: 2px;
+}
+
 .page-container {
   display: flex;
   flex-direction: column;

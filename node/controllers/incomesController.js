@@ -1,6 +1,8 @@
 const Incomes = require("../models/incomes")
+// מייבא את מודל השוכרים כדי לצרף שם להתראת תשלום.
+const Renters = require("../models/renters")
 // מייבא שליחת התראות למנהלים לאחר רישום הכנסה חדשה.
-const { notifyAdmins } = require("../services/emailNotifications")
+const { notifyAdmins, sendPaymentNotification } = require("../services/emailNotifications")
 
 const createNewIncome = async (req, res) => {
     const { date, sum, paymentType, renter, rental, incomeType } = req.body
@@ -43,6 +45,9 @@ const updateIncome = async (req, res) => {
         return res.send("id is required")
     }
     let income = await Incomes.findById(id)
+    if (!income) return res.status(404).json({ message: "ההכנסה לא נמצאה" })
+    // מאתר את שם השוכר לפני עדכון רשומת ההכנסה.
+    const paymentRenter = await Renters.findById(renter || income.renter).select("name").lean()
 
     income.date = date
     income.sum = sum
@@ -52,6 +57,11 @@ const updateIncome = async (req, res) => {
     income.paymentType = paymentType
     income.renter = renter
     await income.save()
+    // שולח את הנוסח על השכרה ששולמה רק עבור רשומת תשלום מלא ולא עבור מקדמה.
+    if (income.incomeType !== "advance") {
+        // מעביר להתראה את שם השוכר, תאריך ההכנסה והמשתמש המחובר.
+        await sendPaymentNotification({ renterName: paymentRenter?.name, paymentDate: income.date, managerName: req.user?.username })
+    }
     res.json(income)
 }
 

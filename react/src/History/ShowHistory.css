@@ -1,0 +1,156 @@
+.history-home {
+    width: min(100% - 2rem, 1100px); /* מגביל את רוחב התוכן ומונע גלילה אופקית בנייד. */
+    margin: 0 auto; /* ממקם את המסך במרכז אזור התוכן. */
+    padding: 2rem 0 3.5rem; /* יוצר מרווח נוח מעל הכותרת ומתחת לניווט. */
+    color: #20382b; /* מתאים את צבע הטקסט לשאר מסכי ההיסטוריה. */
+}
+
+.history-home-header {
+    margin-bottom: 1.75rem; /* מפריד בין כותרת הארכיון לאפשרויות הניווט. */
+    padding-bottom: 1.25rem; /* מוסיף מרווח לפני קו ההפרדה. */
+    border-bottom: 1px solid #dce6df; /* מסמן בעדינות את סיום אזור הכותרת. */
+}
+
+.history-home-eyebrow {
+    margin: 0 0 0.45rem; /* מצמיד את תווית המדור לכותרת הראשית. */
+    color: #9c5b42; /* מוסיף צבע משני חמים להבחנה בין רמות הכותרת. */
+    font-size: 0.8rem; /* שומר את תווית המדור קטנה מהכותרת. */
+    font-weight: 700; /* מדגיש את תווית המדור. */
+}
+
+.history-home-header h1 {
+    margin: 0; /* מבטל מרווחי ברירת מחדל כדי לשלוט בקצב האנכי. */
+    color: #20382b; /* מציג את הכותרת בצבע הירוק של מסכי ההיסטוריה. */
+    font-size: 2rem; /* נותן לכותרת היררכיה ברורה בלי להפוך אותה לגיבור גדול. */
+    line-height: 1.2; /* שומר על גובה שורה קומפקטי בכותרת. */
+}
+
+.history-home-intro {
+    margin: 0.55rem 0 0; /* מפריד את תיאור הדף מהכותרת. */
+    color: #6c7c73; /* מציג את התיאור בצבע משני קריא. */
+    font-size: 0.98rem; /* שומר על טקסט ההסבר נוח לקריאה. */
+    line-height: 1.6; /* משפר קריאות של הטקסט בעברית. */
+}
+
+.history-home-nav {
+    display: grid; /* מסדר את אפשרויות ההיסטוריה כרשת. */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* מציג שני מסלולים שווי־רוחב במסכים רחבים. */
+    gap: 1rem; /* מפריד בין שני מסלולי הניווט. */
+}
+
+.history-home-link {
+    position: relative; /* מאפשר לקשט כל אפשרות באמצעות פס צבע עליון. */
+    display: grid; /* מאפשר ליישר אייקון, טקסט וחץ במבנה יציב. */
+    grid-template-columns: 3.25rem minmax(0, 1fr) auto; /* מקצה רוחב לאייקון, לטקסט ולחץ. */
+    align-items: center; /* ממרכז את כל רכיבי הקישור אנכית. */
+    gap: 1rem; /* שומר על רווח ברור בין אזורי התוכן. */
+    min-height: 9.5rem; /* שומר על גודל לחיץ יציב גם כשהתיאור משתנה. */
+    padding: 1.4rem; /* יוצר אזור לחיצה מרווח ונוח. */
+    overflow: hidden; /* מסתיר את פס הצבע בקצוות המעוגלים. */
+    border: 1px solid #dce6df; /* מגדיר מסגרת עדינה בהתאם לשאר מסכי ההיסטוריה. */
+    border-top: 3px solid #3d7657; /* מסמן חזותית את אפשרות הניווט הראשונה בירוק. */
+    border-radius: 6px; /* שומר על פינות קטנות התואמות לעיצוב הקיים. */
+    background: #fff; /* שומר על ניגודיות טובה לטקסט ולאייקון. */
+    color: inherit; /* יורש את צבע הטקסט של המסך. */
+    text-decoration: none; /* מסיר קו תחתון מקישור הניווט. */
+    box-shadow: 0 2px 8px rgba(32, 56, 43, 0.04); /* מוסיף עומק עדין שמבדיל את מסלולי הניווט מהרקע. */
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; /* מרכך מעבר במעבר עכבר ובמיקוד. */
+}
+
+.history-home-link-renters {
+    border-top-color: #b66a4d; /* נותן למסלול השוכרים סימון צבע שונה אך מאותה משפחה רגועה. */
+}
+
+.history-home-link:hover {
+    transform: translateY(-2px); /* מרים בעדינות את הקישור כדי להראות שהוא פעיל. */
+    border-color: #b8cdbf; /* מחזק את המסגרת בעת מעבר עכבר. */
+    box-shadow: 0 8px 20px rgba(32, 56, 43, 0.09); /* מחדד את ההפרדה במצב ריחוף. */
+}
+
+.history-home-link:focus-visible {
+    outline: 3px solid rgba(60, 121, 92, 0.4); /* מספק סימון מיקוד ברור למקלדת. */
+    outline-offset: 3px; /* מרחיק את סימון המיקוד ממסגרת הקישור. */
+}
+
+.history-home-icon {
+    display: grid; /* ממקם את האייקון במרכז אזור ייעודי. */
+    width: 3.25rem; /* שומר על רוחב קבוע לאזור האייקון. */
+    aspect-ratio: 1; /* שומר על צורת ריבוע יציבה. */
+    place-items: center; /* ממרכז את האייקון בשני הצירים. */
+    border-radius: 5px; /* נותן לאזור האייקון פינות קטנות. */
+    background: #edf4ef; /* מבדיל את האייקון בעדינות מהרקע הלבן. */
+    color: #2c6847; /* מציג את אייקון ההשכרות בירוק כהה. */
+    font-size: 1.2rem; /* מגדיל את האייקון כדי שיהיה קל לסרוק אותו. */
+}
+
+.history-home-link-renters .history-home-icon {
+    background: #f7efeb; /* נותן לאייקון השוכרים רקע התואם לפס הצבע שלו. */
+    color: #9c5b42; /* מציג את אייקון השוכרים בגוון חם. */
+}
+
+.history-home-link-copy {
+    display: grid; /* מסדר תווית, כותרת ותיאור זה מעל זה. */
+    min-width: 0; /* מאפשר לטקסט להישבר במקום להרחיב את הכרטיס. */
+    gap: 0.35rem; /* מגדיר מרווח אחיד בין שורות הטקסט. */
+}
+
+.history-home-link-kicker {
+    color: #718078; /* מציג את מספר המסלול והקטגוריה כמידע משני. */
+    font-size: 0.72rem; /* שומר את התווית קטנה מהכותרת ומהתיאור. */
+    font-weight: 700; /* מסייע לסרוק את תווית המסלול. */
+}
+
+.history-home-link-copy strong {
+    color: #20382b; /* מדגיש את שם המסך כיעד הראשי של הקישור. */
+    font-size: 1.15rem; /* נותן לכותרת יעד היררכיה ברורה. */
+}
+
+.history-home-link-copy > span:last-child {
+    color: #6c7c73; /* מציג את תיאור היעד בצבע משני. */
+    font-size: 0.9rem; /* שומר את התיאור קומפקטי. */
+    line-height: 1.55; /* מאפשר לתיאור להישבר בנוחות בעברית. */
+}
+
+.history-home-arrow {
+    color: #3d7657; /* מציג את כיוון הניווט בצבע תואם למסלול. */
+    font-size: 1rem; /* שומר על חץ קטן שאינו מתחרה בכותרת. */
+    transition: transform 160ms ease; /* מרכך את תנועת החץ בעת ריחוף. */
+}
+
+.history-home-link-renters .history-home-arrow {
+    color: #9c5b42; /* מתאים את החץ למסלול השוכרים. */
+}
+
+.history-home-link:hover .history-home-arrow {
+    transform: translateX(-3px); /* מזיז את החץ מעט לכיוון ההתקדמות במעבר עכבר. */
+}
+
+@media (max-width: 700px) {
+    .history-home {
+        padding-top: 1rem; /* מקטין את המרווח העליון במסכים צרים. */
+        padding-bottom: 2rem; /* מצמצם את המרווח התחתון בנייד. */
+    }
+
+    .history-home-nav {
+        grid-template-columns: minmax(0, 1fr); /* מציג כל מסלול בשורה נפרדת בנייד. */
+        gap: 0.75rem; /* מצמצם את הרווח בין המסלולים בנייד. */
+    }
+
+    .history-home-link {
+        grid-template-columns: 2.8rem minmax(0, 1fr) auto; /* מתאים את רוחב האייקון למסך צר. */
+        gap: 0.8rem; /* מצמצם רווחים כדי לפנות מקום לטקסט. */
+        min-height: 8rem; /* שומר על שטח לחיצה מספק בנייד. */
+        padding: 1rem; /* מפחית שוליים פנימיים במסכים קטנים. */
+    }
+
+    .history-home-icon {
+        width: 2.8rem; /* מקטין את אזור האייקון במסך צר. */
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .history-home-link,
+    .history-home-arrow {
+        transition: none; /* מבטל תנועות למשתמשים שביקשו צמצום תנועה. */
+    }
+}

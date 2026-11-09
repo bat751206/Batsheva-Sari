@@ -1,7 +1,11 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { useContext } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import AuthContext from './AuthContext'
 
 const Header = () => {
+    const { isAdmin, setIsAdmin } = useContext(AuthContext)
+    const navigate = useNavigate()
     const links = [
         { label: 'כספים', to: '/account' },
         { label: 'השכרות', to: '/rents' },
@@ -9,6 +13,14 @@ const Header = () => {
         { label: 'משימות', to: '/todos' },
         { label: 'היסטוריה', to: '/history' },
     ]
+    // מוסיף את קישור ניהול החשבונות רק לתפריט של מנהל.
+    if (isAdmin) links.push({ label: 'הוספת מנהל', to: '/admin/add' })
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken')
+        setIsAdmin(false)
+        navigate('/', { replace: true })
+    }
 
     return (
         <header className="topbar-wrap">
@@ -30,6 +42,10 @@ const Header = () => {
                             {link.label}
                         </NavLink>
                     ))}
+                    <button className="header-link header-logout" type="button" onClick={handleLogout}>
+                        <i className="pi pi-sign-out" aria-hidden="true" />
+                        יציאה
+                    </button>
                 </nav>
             </div>
         </header>

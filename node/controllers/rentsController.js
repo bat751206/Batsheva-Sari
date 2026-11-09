@@ -2,7 +2,7 @@ const Rents = require("../models/rents")
 const Renters = require("../models/renters")
 const Incomes = require("../models/incomes")
 // מייבא התראות למנהלים על תשלום חדש שנרשם להשכרה.
-const { notifyAdmins } = require("../services/emailNotifications")
+const { notifyAdmins, sendPaymentNotification } = require("../services/emailNotifications")
 const { createNewRenter } = require("./rentersController")
 const {addrentalToRenter} = require("./rentersController")
 
@@ -30,6 +30,11 @@ const createNewRent = async (req, res) => {
     const advanceAmount = Number.isFinite(Number(advance)) ? Number(advance) : Number(sumPayment) * 0.1
     const rent = await Rents.create({ date, numOfBeds, numOfBabyBeds, numOfNights, renter: renter._id, checkPikadon, tivuch, sumPayment, advance: advanceAmount, advancePaymentType: advancePaymentType || undefined, description })
     await addrentalToRenter(renter._id,rent)
+    await notifyAdmins({
+        subject: "נוספה השכרה חדשה",
+        message: `נוספה השכרה עבור ${name}, בתאריך ${String(date).slice(0, 10)} למשך ${numOfNights} לילות. מספר מיטות: ${numOfBeds}. סכום לתשלום: ${sumPayment} ₪.`,
+        path: "/rents"
+    })
     res.json(rent)
 
 }
@@ -110,6 +115,8 @@ const paymentUpdateRent = async (req,res) =>{
     const rent= await Rents.findById(id)
     if (!rent) return res.status(404).json({ message: "השכרה לא נמצאה" })
     if (!paymentType) return res.status(400).json({ message: "יש לבחור אמצעי תשלום" })
+    // מאתר את שם השוכר לצורך פרטי מייל התשלום.
+    const renter = await Renters.findById(rent.renter).select("name").lean()
 
     const fullIncomeAmount = Number(rent.sumPayment) * (rent.tivuch ? 0.85 : 1)
     // יוצר הכנסה רק אם עדיין לא נרשם תשלום מלא להשכרה זו.
@@ -142,9 +149,14 @@ const paymentUpdateRent = async (req,res) =>{
         })
     }
     await Incomes.deleteMany({ rental: rent._id, incomeType: 'advance' })
-    rent.isPaid=true
-    rent.paymentType=paymentType
-    await rent.save()
+    // מעדכן רק שדות תשלום כדי שרשומה ישנה בלי advancePaymentType לא תיכשל בוולידציה.
+    await Rents.updateOne(
+        { _id: rent._id },
+        { $set: { isPaid: true, paymentType } },
+        { runValidators: true }
+    )
+    // שולח התראה עם שם השוכר, תאריך התשלום ושם המנהל שביצע את העדכון.
+    await sendPaymentNotification({ renterName: renter?.name, paymentDate: new Date(), managerName: req.user?.username })
     res.json(rent) 
 }
 const advanceUpdateRent = async (req,res) =>{
@@ -193,4 +205,3 @@ const isDateAvailable = async (date, numOfNights, excludeRentId = null) => {
 
 
 module.exports = { createNewRent ,getAllRents, getNearestRent, getRentById,updateRent,deleteRent,paymentUpdateRent,advanceUpdateRent}
-

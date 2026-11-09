@@ -16,6 +16,7 @@ import Login from './Components/Login'
 import RequireAuth from './Components/RequireAuth'
 import RequireAdmin from './Components/RequireAdmin'
 import Register from './Components/Register'  
+import AddAdmin from './AdminSetting/AddAdmin'
 import { useState } from 'react' 
 import { jwtDecode } from 'jwt-decode'
 import AuthContext from './Components/AuthContext'
@@ -48,6 +49,7 @@ function App() {
                 <Route path='/account' element={<Accounts />} />
                 <Route path='/account/outcomes' element={<Outcomes />} />
                 <Route element={<RequireAdmin />}>
+                  <Route path='/admin/add' element={<AddAdmin />} />
                   <Route path='/account/incomes' element={<Incomes />} />
                   <Route path='/account/monthlybalance' element={<MonthlyBalance />} />
                 </Route>

@@ -1,0 +1,148 @@
+.add-admin-page {
+    width: min(100% - 2rem, 760px); /* מגביל את רוחב הטופס ומונע גלילה אופקית. */
+    margin: 0 auto; /* ממקם את מסך ההוספה במרכז התוכן. */
+    padding: 1.5rem 0 3rem; /* יוצר מרווח סביב המסך. */
+    color: #20382b; /* מתאים את הטקסט לפלטת מסכי ההיסטוריה. */
+}
+
+.add-admin-header {
+    margin-bottom: 1.5rem; /* מפריד בין כותרת המסך לטופס. */
+    padding-bottom: 1rem; /* יוצר מרווח לפני קו ההפרדה. */
+    border-bottom: 1px solid #dce6df; /* מסמן בעדינות את סיום הכותרת. */
+}
+
+.add-admin-eyebrow {
+    margin: 0 0 0.4rem; /* מצמיד את תווית המדור לכותרת. */
+    color: #9c5b42; /* מבדיל את התווית מהכותרת הראשית. */
+    font-size: 0.8rem; /* שומר את תווית המדור קטנה. */
+    font-weight: 700; /* מדגיש את תווית המדור. */
+}
+
+.add-admin-header h1 {
+    margin: 0; /* מבטל מרווחי ברירת מחדל בכותרת. */
+    color: #20382b; /* מציג את הכותרת בירוק כהה. */
+    font-size: 1.8rem; /* נותן לכותרת היררכיה ברורה. */
+}
+
+.add-admin-header > p:last-child {
+    margin: 0.5rem 0 0; /* מפריד את תיאור המסך מהכותרת. */
+    color: #6c7c73; /* מציג תיאור בצבע משני. */
+}
+
+.add-admin-form {
+    display: grid; /* מסדר את שדות הטופס בעמודה אחת. */
+    gap: 0.55rem; /* יוצר ריווח אחיד בין שדות ותוויות. */
+    max-width: 560px; /* שומר על רוחב נוח לקריאת טופס. */
+    padding: 1.25rem; /* יוצר שוליים פנימיים סביב הטופס. */
+    border: 1px solid #dce6df; /* תוחם את אזור הטופס. */
+    border-radius: 6px; /* שומר על פינות קטנות. */
+    background: #fff; /* מבליט את הטופס על רקע המסך. */
+}
+
+.add-admin-form > label:not(.add-admin-consent) {
+    margin-top: 0.55rem; /* מפריד בין שדות שונים. */
+    color: #40524a; /* מציג תוויות בצבע קריא. */
+    font-size: 0.9rem; /* שומר על תוויות קומפקטיות. */
+    font-weight: 600; /* מבדיל תוויות מערכי השדות. */
+}
+
+.add-admin-form > input {
+    width: 100%; /* מותח את השדות לרוחב הטופס. */
+    min-height: 2.8rem; /* מבטיח אזור הקלדה נוח. */
+    padding: 0.5rem 0.7rem; /* מוסיף מרווח פנימי לטקסט. */
+    border: 1px solid #cbd5ce; /* מגדיר גבול עדין לשדה. */
+    border-radius: 5px; /* שומר על פינות קומפקטיות. */
+    background: #fff; /* שומר על רקע שדה נקי. */
+    color: #20382b; /* שומר על ניגודיות טקסט טובה. */
+    font: inherit; /* משתמש בגופן ובגודל של המערכת. */
+}
+
+.add-admin-form > input:focus-visible {
+    outline: 3px solid rgba(60, 121, 92, 0.3); /* מדגיש שדה פעיל למקלדת. */
+    outline-offset: 1px; /* מרחיק את סימון המיקוד מגבול השדה. */
+    border-color: #3c795c; /* מדגיש גם את גבול השדה הפעיל. */
+}
+
+.add-admin-hint {
+    margin-top: -0.3rem; /* מצמיד את ההנחיה לשדה הסיסמה. */
+    color: #6c7c73; /* מציג את ההנחיה כטקסט משני. */
+    font-size: 0.78rem; /* שומר את ההנחיה קטנה מהתווית. */
+}
+
+.add-admin-consent {
+    display: flex; /* מציג תיבת סימון וטקסט באותה שורה. */
+    align-items: center; /* מיישר אנכית את התיבה והטקסט. */
+    gap: 0.6rem; /* מפריד בין תיבת הסימון לטקסט. */
+    margin-top: 0.5rem; /* מפריד את ההסכמה מהשדה הקודם. */
+    color: #52635a; /* מציג את טקסט ההסכמה בצבע משני. */
+    font-size: 0.88rem; /* שומר על תווית הסכמה קומפקטית. */
+    cursor: pointer; /* מציין שניתן ללחוץ על התווית. */
+}
+
+.add-admin-consent input {
+    width: 1rem; /* מגדיר רוחב קבוע לתיבת הסימון. */
+    height: 1rem; /* מגדיר גובה תואם לתיבת הסימון. */
+    margin: 0; /* מבטל שוליים אוטומטיים. */
+    accent-color: #2c6847; /* צובע את הבחירה בצבע המותג. */
+}
+
+.add-admin-consent input:disabled {
+    cursor: not-allowed; /* מציין שלא ניתן להסכים ללא כתובת מייל. */
+}
+
+.add-admin-message {
+    margin: 0.5rem 0 0; /* מפריד הודעות מצב מהשדות. */
+    padding: 0.65rem 0.75rem; /* יוצר מרווח פנימי להודעת מצב. */
+    border-radius: 4px; /* שומר על פינות קטנות להודעות. */
+    font-size: 0.88rem; /* שומר את ההודעה קריאה וקומפקטית. */
+}
+
+.add-admin-error {
+    border-inline-start: 3px solid #b7493e; /* מסמן שגיאה בקו אדום בתחילת השורה. */
+    background: #fff1ef; /* מבדיל את הודעת השגיאה מהרקע. */
+    color: #923a32; /* שומר על ניגודיות בהודעת השגיאה. */
+}
+
+.add-admin-success {
+    border-inline-start: 3px solid #3c795c; /* מסמן הצלחה בקו ירוק בתחילת השורה. */
+    background: #edf5ef; /* מבדיל את הודעת ההצלחה מהרקע. */
+    color: #245b45; /* מציג טקסט הצלחה בירוק כהה. */
+}
+
+.add-admin-submit {
+    min-height: 2.8rem; /* יוצר אזור לחיצה נוח. */
+    margin-top: 0.65rem; /* מפריד את הכפתור מהודעות המצב. */
+    padding: 0.5rem 1rem; /* יוצר מרווח פנימי לכיתוב. */
+    border: 1px solid #244d3d; /* מגדיר גבול תואם לצבע הכפתור. */
+    border-radius: 5px; /* שומר על פינות כפתור קטנות. */
+    background: #244d3d; /* מבדיל את פעולת יצירת המנהל. */
+    color: #fff; /* שומר על ניגודיות לכיתוב הכפתור. */
+    font: inherit; /* משתמש בגופן המערכת. */
+    font-weight: 700; /* מדגיש את פעולת השליחה. */
+    cursor: pointer; /* מציין שהכפתור לחיץ. */
+}
+
+.add-admin-submit:hover:not(:disabled) {
+    background: #1d4032; /* מחשיך מעט את הכפתור במעבר עכבר. */
+}
+
+.add-admin-submit:focus-visible {
+    outline: 3px solid rgba(60, 121, 92, 0.35); /* מסמן מיקוד מקלדת ברור לכפתור. */
+    outline-offset: 2px; /* מרחיק את סימון המיקוד מהכפתור. */
+}
+
+.add-admin-submit:disabled {
+    opacity: 0.6; /* מציג שהטופס בתהליך שליחה. */
+    cursor: wait; /* מציג שהמערכת מעבדת את הבקשה. */
+}
+
+@media (max-width: 640px) {
+    .add-admin-page {
+        width: min(100% - 1rem, 760px); /* מצמצם שוליים חיצוניים במסכים קטנים. */
+        padding-top: 1rem; /* מקטין את המרווח העליון בנייד. */
+    }
+
+    .add-admin-form {
+        padding: 1rem; /* מפחית שוליים פנימיים במסך צר. */
+    }
+}

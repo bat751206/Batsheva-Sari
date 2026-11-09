@@ -9,7 +9,11 @@ const {
     // שולחת התראות ניהול למנהלים בלבד.
     notifyAdmins,
     // שולחת הודעת אישור חד־פעמית לכתובת נתונה.
-    sendEmailConfirmation
+    sendEmailConfirmation,
+    // שולחת הודעת בדיקה לכתובת שאינה חייבת להיות רשומה במערכת.
+    sendTestEmail,
+    // שולחת התראת תשלום לכתובת קבועה שהוגדרה בסביבה.
+    sendPaymentNotification
 } = require("../services/emailNotifications")
 
 // בודק קהל יעד, הסרת כתובות כפולות, קישורים ותוכן הודעות.
@@ -20,6 +24,7 @@ test("Resend notifications use opted-in recipients, deduplicate addresses, and i
     const originalEnvironment = {
         RESEND_API_KEY: process.env.RESEND_API_KEY, // שומר את מפתח Resend המקורי.
         MAIL_FROM: process.env.MAIL_FROM, // שומר את כתובת השולח המקורית.
+        PAYMENT_NOTIFICATION_EMAIL: process.env.PAYMENT_NOTIFICATION_EMAIL, // שומר את כתובת ההתראה המקורית.
         APP_URL: process.env.APP_URL // שומר את כתובת האפליקציה המקורית.
     }
     // אוסף את תנאי החיפוש ואת בקשות השליחה המדומות.
@@ -86,4 +91,26 @@ test("Resend notifications use opted-in recipients, deduplicate addresses, and i
     assert.equal(await sendEmailConfirmation("user@example.com"), true)
     assert.equal(sentMessages.length, 1) // מוודא שנשלחה בקשת אישור יחידה.
     assert.equal(sentMessages[0].subject, "אישור קבלת מיילים מהמערכת") // בודק את נושא הודעת האישור.
+
+    // בודק שמייל ניסיון נשלח לכתובת שסופקה בלי חיפוש משתמש במסד.
+    sentMessages.length = 0
+    assert.equal(await sendTestEmail("resend-account@example.com"), true) // מוודא שהשירות קיבל את בקשת הניסיון.
+    assert.equal(sentMessages.length, 1) // מוודא שנוצרה הודעת ניסיון אחת.
+    assert.deepEqual(sentMessages[0].to, ["resend-account@example.com"]) // מוודא שהכתובת מהפקודה היא הנמען.
+    assert.equal(sentMessages[0].subject, "בדיקת שליחת מייל מהמערכת") // בודק את נושא הודעת הבדיקה.
+    assert.equal(sentMessages[0].text, "נוצר ע\"י הדרכת github copilot") // מוודא שגוף הטקסט מכיל רק את המשפט שהתבקש.
+    assert.doesNotMatch(sentMessages[0].html, /<h2>|פתיחת המערכת/) // מוודא שלא נוספו כותרת או קישור לגוף הבדיקה.
+
+    // בודק שעדכון תשלום שולח הודעה עם פרטי השוכר, התאריך ושם המנהל.
+    process.env.PAYMENT_NOTIFICATION_EMAIL = "resend-account@example.com"
+    sentMessages.length = 0
+    const paymentDate = new Date("2026-03-09T10:00:00Z") // מגדיר תאריך קבוע כדי לבדוק המרה לשעון ישראל.
+    assert.equal(await sendPaymentNotification({ renterName: "רות כהן", paymentDate, managerName: "admin-user" }), true) // מוודא ששליחת התראת התשלום הצליחה.
+    assert.deepEqual(sentMessages[0].to, ["resend-account@example.com"]) // מוודא שהנמען מגיע מהגדרת הסביבה.
+    const paymentDateText = new Intl.DateTimeFormat("he-IL", { timeZone: "Asia/Jerusalem", day: "2-digit", month: "2-digit", year: "numeric" }).format(paymentDate) // מחשב את התאריך הצפוי לפי שעון ישראל.
+    assert.equal(sentMessages[0].text, `ההשכרה של רות כהן שולמה בתאריך ${paymentDateText} עודכן באמצעות: admin-user`) // מוודא שכל הפרטים מופיעים בנוסח המבוקש.
+    assert.match(sentMessages[0].subject, /^עדכון תשלום במערכת \| /) // מוודא שהנושא מזהה התראת תשלום.
+    const firstPaymentSubject = sentMessages[0].subject // שומר את הנושא הראשון להשוואת עדכונים.
+    await sendPaymentNotification({ renterName: "רות כהן", paymentDate, managerName: "admin-user" }) // שולח עדכון נוסף עם אותם פרטי תשלום.
+    assert.notEqual(sentMessages[1].subject, firstPaymentSubject) // מוודא שכל עדכון מקבל נושא חדש ושרשור נפרד.
 })
