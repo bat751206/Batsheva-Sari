@@ -220,9 +220,33 @@
   white-space: nowrap;
 }
 
-.income-item-description span {
+.income-item-date {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #81938f;
+  font: inherit;
   font-size: 0.82rem;
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-color: #c5d5d0;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.income-item-date:hover:not(:disabled) {
+  color: #28715e;
+}
+
+.income-item-date:focus-visible {
+  outline: 2px solid rgba(33, 137, 99, 0.45);
+  outline-offset: 2px;
+}
+
+.income-item-date:disabled {
+  text-decoration: none;
+  cursor: default;
 }
 
 .income-payment-type {

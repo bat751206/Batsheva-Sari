@@ -29,7 +29,7 @@
     gap: 0.18em;
     margin: 0;
     color: var(--home-ink);
-    font-size: 64px;
+    font-size: 40px;
     font-weight: 700;
     line-height: 1.08;
 }
@@ -43,7 +43,7 @@
 
 .home-collage {
     display: grid;
-    width: min(100%, 1080px);
+    width: min(100%, 1800px);
     margin-inline: auto;
     direction: ltr;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 1.2fr);
@@ -52,7 +52,7 @@
         "north-balcony bedroom south west"
         "south-balcony south-balcony south west";
     gap: clamp(8px, 1vw, 14px);
-    height: min(62vh, 520px);
+    height: min(62vh, 580px);
     min-height: 360px;
     max-height: 520px;
 }
@@ -103,6 +103,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    opacity: 0.88;
     transform: scale(1.04);
     transition: transform 700ms ease;
 }
@@ -145,7 +146,7 @@
 
 @media (max-width: 900px) {
     .home-intro h1 {
-        font-size: 52px;
+        font-size: 36px;
     }
 
     .home-collage {
@@ -158,7 +159,7 @@
 
 @media (max-width: 640px) {
     .home-intro h1 {
-        font-size: 42px;
+        font-size: 32px;
     }
 
     .home-description {

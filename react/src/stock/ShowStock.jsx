@@ -31,7 +31,10 @@ const ShowStock = () => {
 
     const filteredProducts = useMemo(() => {
         const query = search.trim().toLocaleLowerCase('he')
-        return info.filter((product) => product.product?.toLocaleLowerCase('he').includes(query))
+        return info.filter((product) => (
+            Number(product.proAmount || 0) > 0 &&
+            product.product?.toLocaleLowerCase('he').includes(query)
+        ))
     }, [info, search])
 
     const updateProduct = (updatedProduct) => {

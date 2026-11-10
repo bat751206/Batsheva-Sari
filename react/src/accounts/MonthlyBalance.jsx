@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import './MonthlyBalance.css'
 
@@ -7,6 +8,7 @@ const formatMonthValue = (date) => (
 )
 
 const MonthlyBalance = () => {
+    const navigate = useNavigate()
     const [incomes, setIncomes] = useState([])
     const [outcomes, setOutcomes] = useState([])
     const [loading, setLoading] = useState(true)
@@ -80,6 +82,9 @@ const MonthlyBalance = () => {
         month: 'long',
         year: 'numeric'
     }).format(selectedMonthDate)
+    const selectedPeriodCalendarDate = periodMode === 'annual'
+        ? `${selectedYear}-01-01`
+        : `${selectedMonth}-01`
     const isInSelectedPeriod = (value) => {
         const date = new Date(value)
         return !Number.isNaN(date.getTime())
@@ -213,7 +218,18 @@ const MonthlyBalance = () => {
                 <>
                     <section className={`balance-result ${balanceStatus}`} aria-label="תוצאה חודשית">
                         <div className="balance-result-copy">
-                            <p>התוצאה של {periodMode === 'annual' ? 'שנת' : 'חודש'} {selectedPeriodLabel}</p>
+                            <p>
+                                התוצאה של {periodMode === 'annual' ? 'שנת' : 'חודש'}{' '}
+                                <button
+                                    className="balance-result-date-link"
+                                    type="button"
+                                    onClick={() => navigate('/rents', {
+                                        state: { selectedDate: selectedPeriodCalendarDate },
+                                    })}
+                                >
+                                    {selectedPeriodLabel}
+                                </button>
+                            </p>
                             <h2>{totalBalance > 0 ? 'יתרה חיובית' : totalBalance < 0 ? 'גירעון' : 'איזון מלא'}</h2>
                         </div>
                         <strong className="balance-result-amount" dir="ltr">

@@ -185,21 +185,26 @@
 
 .app-shell {
   min-height: 100vh;
-  padding: 0;
+  padding: 30px;
 }
 
 .page-content {
   width: 100%;
+  max-width: 1148px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+.page-content-rent-calendar {
   max-width: none;
-  margin: 0;
   padding: clamp(1rem, 2.2vh, 1.5rem) clamp(0.75rem, 1.5vw, 1.5rem) 1rem;
 }
 
 .topbar-wrap {
   width: 100%;
-  max-width: none;
+  max-width: 1148px;
   margin: 0 auto;
-  padding-inline: clamp(0.5rem, 1vw, 1rem);
+  padding-inline: clamp(0.75rem, 1.5vw, 1.5rem);
   padding-block-start: 12px;
 }
 
@@ -272,7 +277,7 @@
 .page-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .page-header {
@@ -280,7 +285,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.5rem 0;
+  padding: 0 0 0.9rem;
 }
 
 .eyebrow {
@@ -292,10 +297,9 @@
   text-transform: uppercase;
 }
 
-.page-header h1 {
+.page-content:not(.page-content-rent-calendar) .page-header h1 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: #0f172a;
+  font-size: 2.15rem;
 }
 
 .quick-actions-card {
@@ -310,6 +314,18 @@
 }
 
 @media (max-width: 640px) {
+    .page-content {
+      padding: 1rem 1rem 1.5rem;
+    }
+
+    .page-content-rent-calendar {
+      padding: clamp(1rem, 2.2vh, 1.5rem) 0.75rem 1rem;
+    }
+
+    .page-content:not(.page-content-rent-calendar) .page-header h1 {
+      font-size: 1.9rem;
+    }
+
   .app-shell {
     padding: 0;
   }

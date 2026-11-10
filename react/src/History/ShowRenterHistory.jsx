@@ -60,7 +60,7 @@ const ShowRenterHistory = () => {
   })
 
   return (
-    <main className="show-rental-history" dir="rtl">
+    <main className="show-rental-history show-renter-history" dir="rtl">
       <header className="show-rental-history-header">
         <div>
           <h1>היסטוריית שוכרים</h1>

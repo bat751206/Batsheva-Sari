@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { HDate, isLeapYear } from '@hebcal/hdate'
 import SignalRental, { formatHebrewDate } from './SignalRental'
 import axios from 'axios'
@@ -40,6 +41,7 @@ const toLocalDate = (hebrewDate) => {
 }
 
 const ShowRentalHistory = () => {
+    const navigate = useNavigate()
     const [rentals, setRentals] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [loadError, setLoadError] = useState('')
@@ -235,19 +237,38 @@ const ShowRentalHistory = () => {
                                 const detailsId = `rental-details-${rental._id}`
 
                                 return <article className="rental-history-row" key={rental._id}>
-                                    <button
-                                        className="rental-history-row-toggle"
-                                        type="button"
-                                        aria-expanded={isExpanded}
-                                        aria-controls={detailsId}
-                                        onClick={() => setExpandedRentalId(isExpanded ? null : rental._id)}
-                                    >
-                                        <span className="rental-history-row-main">
-                                            <strong>{rental.renter?.name || 'שם השוכר לא זמין'}</strong>
-                                            <span>{formatHebrewDate(rental.date)}</span>
-                                        </span>
-                                        <span className="rental-history-row-indicator" aria-hidden="true">{isExpanded ? '−' : '+'}</span>
-                                    </button>
+                                    <div className="rental-history-row-header">
+                                        <button
+                                            className="rental-history-name-toggle"
+                                            type="button"
+                                            aria-expanded={isExpanded}
+                                            aria-controls={detailsId}
+                                            onClick={() => setExpandedRentalId(isExpanded ? null : rental._id)}
+                                        >
+                                            {rental.renter?.name || 'שם השוכר לא זמין'}
+                                        </button>
+                                        <button
+                                            className="signal-renter-rental-date"
+                                            type="button"
+                                            disabled={!/^\d{4}-\d{2}-\d{2}$/.test(String(rental.date || '').slice(0, 10))}
+                                            aria-label={`פתיחת לוח ההשכרות בתאריך ${formatHebrewDate(rental.date)}`}
+                                            onClick={() => navigate('/rents', {
+                                                state: { selectedDate: String(rental.date).slice(0, 10) },
+                                            })}
+                                        >
+                                            {formatHebrewDate(rental.date)}
+                                        </button>
+                                        <button
+                                            className="rental-history-expand-toggle"
+                                            type="button"
+                                            aria-expanded={isExpanded}
+                                            aria-controls={detailsId}
+                                            aria-label={`${isExpanded ? 'סגירת' : 'פתיחת'} פרטי ההשכרה של ${rental.renter?.name || 'השוכר'}`}
+                                            onClick={() => setExpandedRentalId(isExpanded ? null : rental._id)}
+                                        >
+                                            <span aria-hidden="true">{isExpanded ? '−' : '+'}</span>
+                                        </button>
+                                    </div>
                                     {isExpanded && <div id={detailsId} className="rental-history-row-details">
                                         <SignalRental rental={rental} />
                                     </div>}

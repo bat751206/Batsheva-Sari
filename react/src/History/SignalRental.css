@@ -1,7 +1,7 @@
 .show-rental-history {
-  width: min(100% - 2rem, 1100px);
-  margin: 0 auto;
-  padding: 1.5rem 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.25rem 0 1.5rem;
 }
 
 .show-rental-history-header {
@@ -9,15 +9,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.1rem;
-  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
   border-bottom: 1px solid #dce6df;
 }
 
 .show-rental-history-header h1 {
   margin: 0;
   color: #20382b;
-  font-size: 1.5rem;
+  font-size: 2.15rem;
+}
+
+@media (max-width: 640px) {
+  .show-rental-history-header h1 {
+    font-size: 1.9rem;
+  }
 }
 
 .show-rental-history-header p {
@@ -186,7 +192,8 @@
 
 .rental-history-row-toggle {
   display: flex;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 3.5rem;
   align-items: center;
   justify-content: space-between;
@@ -198,6 +205,58 @@
   cursor: pointer;
   text-align: right;
   transition: background-color 160ms ease;
+}
+
+.rental-history-row-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.75rem;
+}
+
+.rental-history-name-toggle,
+.rental-history-expand-toggle {
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 0.75rem 0;
+  border: 0;
+  background: #fff;
+  color: #20382b;
+  cursor: pointer;
+}
+
+.rental-history-name-toggle {
+  overflow-wrap: anywhere;
+  text-align: right;
+  font: inherit;
+  font-weight: 700;
+}
+
+.rental-history-expand-toggle {
+  display: grid;
+  width: 2.75rem;
+  place-items: center;
+  color: #245b45;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.rental-history-name-toggle:hover,
+.rental-history-name-toggle[aria-expanded='true'],
+.rental-history-expand-toggle:hover,
+.rental-history-expand-toggle[aria-expanded='true'] {
+  background: #edf5ef;
+}
+
+.rental-history-name-toggle:focus-visible,
+.rental-history-expand-toggle:focus-visible {
+  outline: 3px solid rgba(60, 121, 92, 0.3);
+  outline-offset: -3px;
+}
+
+.rental-history-row-header .signal-renter-rental-date {
+  justify-self: center;
 }
 
 .rental-history-row-toggle:hover,
@@ -249,6 +308,136 @@
   border-radius: 6px;
   background: #fff;
   color: #52635a;
+}
+
+.show-renter-history .show-rental-history-header {
+  border-color: #eadfd8;
+}
+
+.show-renter-history .show-rental-history-header h1 {
+  color: #49352d;
+}
+
+.show-renter-history .show-rental-history-header p {
+  color: #756a63;
+}
+
+.show-renter-history .show-rental-history-count,
+.show-renter-history .signal-renter-rentals-count {
+  background: #f7efeb;
+  color: #94583f;
+}
+
+.show-renter-history .rental-history-search,
+.show-renter-history .rental-history-row,
+.show-renter-history .show-rental-history-state {
+  border-color: #eadfd8;
+}
+
+.show-renter-history .rental-history-search-options {
+  background: #f7efeb;
+}
+
+.show-renter-history .rental-history-search-options button {
+  color: #654d41;
+}
+
+.show-renter-history .rental-history-search-options button[aria-pressed='true'] {
+  background: #9c5b42;
+  color: #fff;
+}
+
+.show-renter-history .rental-history-search-options button:focus-visible,
+.show-renter-history .rental-history-search-field input:focus-visible {
+  outline-color: rgba(156, 91, 66, 0.35);
+}
+
+.show-renter-history .rental-history-search-field,
+.show-renter-history .rental-history-row-toggle {
+  color: #49352d;
+}
+
+.show-renter-history .rental-history-row-toggle {
+  width: 100%;
+}
+
+.show-renter-history .rental-history-search-field input {
+  border-color: #d9c9bf;
+  color: #49352d;
+}
+
+.show-renter-history .rental-history-row {
+  border-inline-start-color: #bd6b4d;
+}
+
+.show-renter-history .rental-history-row:hover,
+.show-renter-history .rental-history-row:focus-within {
+  border-color: #d8b9a9;
+}
+
+.show-renter-history .rental-history-row-toggle:hover,
+.show-renter-history .rental-history-row-toggle[aria-expanded='true'] {
+  background: #fbf5f2;
+}
+
+.show-renter-history .rental-history-row-toggle:focus-visible,
+.show-renter-history .signal-renter-rentals-toggle:focus-visible {
+  outline-color: rgba(156, 91, 66, 0.35);
+}
+
+.show-renter-history .rental-history-row-main > span {
+  background: #f7efeb;
+  color: #94583f;
+}
+
+.show-renter-history .rental-history-row-indicator,
+.show-renter-history .signal-renter-rentals-toggle {
+  color: #8f5038;
+}
+
+.show-renter-history .rental-history-row-details {
+  background: #fbf8f6;
+}
+
+.show-renter-history .signal-renter,
+.show-renter-history .signal-renter-rental {
+  border-color: #eadfd8;
+}
+
+.show-renter-history .signal-renter {
+  color: #49352d;
+  box-shadow: 0 2px 8px rgba(73, 53, 45, 0.05);
+}
+
+.show-renter-history .signal-rental-title {
+  border-bottom-color: #eadfd8;
+  color: #49352d;
+}
+
+.show-renter-history .signal-rental-detail {
+  border-bottom-color: #f0e8e3;
+}
+
+.show-renter-history .signal-rental-detail dt,
+.show-renter-history .signal-rental-detail dd,
+.show-renter-history .signal-renter-rental,
+.show-renter-history .signal-renter-rental strong,
+.show-renter-history .signal-renter-empty {
+  color: #654d41;
+}
+
+.show-renter-history .signal-renter-rental {
+  background: #fbf8f6;
+}
+
+.show-renter-history .signal-renter-paid {
+  background: #f2e7dd;
+  color: #765234;
+}
+
+.show-renter-history .signal-renter-unpaid {
+  background: #fff1df;
+  color: #8a5316;
 }
 
 .signal-rental {
@@ -388,6 +577,35 @@
 
 .signal-renter-rental strong {
   color: #20382b;
+}
+
+.signal-renter-rental-date {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8f5038;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #d8b9a9;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.signal-renter-rental-date:hover {
+  color: #693b2c;
+}
+
+.signal-renter-rental-date:focus-visible {
+  outline: 2px solid rgba(156, 91, 66, 0.5);
+  outline-offset: 3px;
+}
+
+.signal-renter-rental-date:disabled {
+  color: #756a63;
+  text-decoration: none;
+  cursor: default;
 }
 
 .signal-renter-paid,

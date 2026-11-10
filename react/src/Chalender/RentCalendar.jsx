@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { calendar, Location } from '@hebcal/core'
 import { HDate, isLeapYear } from '@hebcal/hdate'
 import axios from 'axios'
@@ -43,6 +44,21 @@ const formatDateInput = (date) => {
     const month = `${date.getMonth() + 1}`.padStart(2, '0')
     const day = `${date.getDate()}`.padStart(2, '0')
     return `${year}-${month}-${day}`
+}
+
+const parseLocalDate = (value) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''))
+    if (!match) return null
+
+    const [, yearValue, monthValue, dayValue] = match
+    const year = Number(yearValue)
+    const month = Number(monthValue)
+    const day = Number(dayValue)
+    const date = new Date(year, month - 1, day)
+
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+        ? date
+        : null
 }
 
 const toLocalDate = (hebrewDate) => {
@@ -140,16 +156,18 @@ const getHebrewDate = (gregorianDate, dayData) => {
 
 const RentCalendar = () => {
     const { isAdmin } = useContext(AuthContext)
-    const [currentMonth, setCurrentMonth] = useState(new Date())
-    const [selectedDate, setSelectedDate] = useState(new Date())
+    const location = useLocation()
+    const initialSelectedDate = parseLocalDate(location.state?.selectedDate) || new Date()
+    const [currentMonth, setCurrentMonth] = useState(initialSelectedDate)
+    const [selectedDate, setSelectedDate] = useState(initialSelectedDate)
     const [locationName, setLocationName] = useState('Jerusalem')
     const [rentals, setRentals] = useState([])
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
     const [datePickerMode, setDatePickerMode] = useState('hebrew')
-    const [gregorianDateValue, setGregorianDateValue] = useState(() => formatDateInput(new Date()))
+    const [gregorianDateValue, setGregorianDateValue] = useState(() => formatDateInput(initialSelectedDate))
     const [datePickerValue, setDatePickerValue] = useState(() => {
-        const today = new HDate(new Date())
-        return { day: today.getDate(), month: today.getMonth(), year: today.getFullYear() }
+        const selectedHebrewDate = new HDate(initialSelectedDate)
+        return { day: selectedHebrewDate.getDate(), month: selectedHebrewDate.getMonth(), year: selectedHebrewDate.getFullYear() }
     })
     //
     const [showAddRental, setShowAddRental] = useState(false)

@@ -1,0 +1,127 @@
+.accounts-page {
+  --accounts-ink: #193b36;
+  --accounts-muted: #6a8179;
+  gap: 0.9rem;
+  color: var(--accounts-ink);
+}
+
+.accounts-heading {
+  align-items: flex-end;
+}
+
+.accounts-heading h1 {
+  margin: 0;
+  color: var(--accounts-ink);
+}
+
+.accounts-subtitle {
+  margin: 0.45rem 0 0;
+  color: var(--accounts-muted);
+}
+
+.accounts-workspace {
+  flex: 0 0 auto;
+  border-top: 1px solid #dce9e3;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.accounts-actions {
+  padding: 1.35rem 1.5rem 1.25rem;
+}
+
+.accounts-actions h2 {
+  margin: 0 0 0.9rem;
+  color: #35574d;
+  font-size: 1rem;
+}
+
+.accounts-page .quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.accounts-page .accounts-action-button {
+  width: min(100%, 12rem);
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 3.25rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.accounts-page .accounts-action-button:hover {
+  transform: translateY(-1px);
+}
+
+.accounts-page .accounts-income-action {
+  background: #eaf5ee;
+  border-color: #d3e8da;
+  color: #24644d;
+}
+
+.accounts-page .accounts-income-action:hover {
+  background: #dff0e5;
+  border-color: #b8d9c4;
+  color: #1d5b44;
+}
+
+.accounts-page .accounts-expense-action {
+  background: #fbefec;
+  border-color: #f0d9d2;
+  color: #a54f3f;
+}
+
+.accounts-page .accounts-expense-action:hover {
+  background: #f7e4de;
+  border-color: #e8c5ba;
+  color: #914432;
+}
+
+.accounts-page .accounts-balance-action {
+  background: #edf3f7;
+  border-color: #d9e5ec;
+  color: #45677a;
+}
+
+.accounts-page .accounts-balance-action:hover {
+  background: #e1edf3;
+  border-color: #c4d9e4;
+  color: #36596c;
+}
+
+.accounts-page .accounts-action-button:focus-visible {
+  outline: 3px solid rgba(47, 126, 96, 0.32);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .accounts-page {
+    gap: 0.65rem;
+  }
+
+  .accounts-heading h1 {
+    font-size: 1.8rem;
+  }
+
+  .accounts-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .accounts-actions {
+    padding: 0.8rem 1rem;
+  }
+
+  .accounts-actions h2 {
+    margin-bottom: 0.55rem;
+  }
+
+  .accounts-page .accounts-action-button {
+    min-height: 2.75rem;
+    padding-block: 0.5rem;
+  }
+}

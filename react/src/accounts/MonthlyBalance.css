@@ -213,6 +213,27 @@
   font-weight: 600;
 }
 
+.balance-result-date-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: #9dbbb0;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.balance-result-date-link:hover {
+  color: #28715e;
+}
+
+.balance-result-date-link:focus-visible {
+  outline: 2px solid rgba(33, 137, 99, 0.45);
+  outline-offset: 2px;
+}
+
 .balance-result-copy h2 {
   margin: 0;
   color: #1d493e;
